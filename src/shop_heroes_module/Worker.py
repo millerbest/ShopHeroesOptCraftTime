@@ -61,6 +61,24 @@ class Worker():
             self.rune = self.init_skill_points
         if self.mastery != -1:
             self.mastery = self.init_skill_points
+    
+    def get_total_used_skill_points(self):
+        result = 0
+        for item in [self.textile,
+                     self.armor,
+                     self.metal,
+                     self.weapon,
+                     self.wood,
+                     self.alchemy,
+                     self.magic,
+                     self.tinker,
+                     self.jewel,
+                     self.arts_crafts,
+                     self.rune,
+                     self.mastery]:
+            if item >= 0:
+                result += item
+        return result
 
     def random_skills(self):
         total_skill_points = self.level * self.skill_per_level
@@ -97,6 +115,16 @@ class Worker():
         self.rune = list_skills[10]
         self.mastery = list_skills[11]
         return
+
+    def get_total_skill_points(self):
+        """Get the constraints that will be used for scipy optimizer""" 
+        total_free_skills_points = self.level * self.skill_per_level
+        total_used_skill_points = self.get_total_used_skill_points()
+        total_skills_points = total_free_skills_points + total_used_skill_points
+        #Not finished
+        return total_skills_points
+        
+        
 
     def __str__(self):
         return ("\
