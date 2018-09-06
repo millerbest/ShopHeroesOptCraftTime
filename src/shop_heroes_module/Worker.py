@@ -1,5 +1,10 @@
 import numpy as np
 import random
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "db"))
+from worker_db import worker_db
+from Worker_params import Worker_params
 
 class Worker():
     def __init__(self, params):
@@ -152,26 +157,61 @@ class Worker():
                                     self.rune,
                                     self.mastery)
 
+class WorkerLoader():
+    def __init__(self, worker_name, level):
+        self.db = worker_db
+        self.worker_data = self.db[worker_name]
+        self.worker_params = self._get_worker_parameters()
+        self.worker_level = level
+        
+    def _get_worker_parameters(self):
+        worker_params = Worker_params({"textile":-1,
+                                       "armor":-1,
+                                       "metal":-1,
+                                       "weapon":-1,
+                                       "wood":-1,
+                                       "alchemy":-1,
+                                       "magic":-1,
+                                       "tinker":-1,
+                                       "jewel":-1,
+                                       "arts_crafts":-1,
+                                       "rune":-1,
+                                       "mastery":0})
 
+        for k in self.worker_data.keys():
+            if k.startswith("skill"):
+                if self.worker_data[k] == 'textile-working':
+                    worker_params.textile = 0
+                elif self.worker_data[k] == "armor-crafting":
+                    worker_params.armor = 0
+                elif self.worker_data[k] == 'metal-working':
+                    worker_params.metal = 0
+                elif self.worker_data[k] == "weapon-crafting":
+                    worker_params.weapon = 0
+                elif self.worker_data[k] == "wood-working":
+                    worker_params.wood = 0
+                elif self.worker_data[k] == "alchemy":
+                    worker_params.alchemy = 0
+                elif self.worker_data[k] == "magic":
+                    worker_params.magic = 0
+                elif self.worker_data[k] == "tinkering":
+                    worker_params.tinker = 0
+                elif self.worker_data[k] == "jewelry":
+                    worker_params.jewel = 0
+                elif self.worker_data[k] == "arts-and-crafts":
+                    worker_params.arts_crafts = 0
+                elif self.worker_data[k] == "rune-writing":
+                    worker_params.rune = 0
+        return worker_params
+
+    def get_worker(self):
+        worker = Worker(self.worker_params)
+        worker.level = self.worker_level
+        worker.skill_per_level = self.worker_data['per-level']
+        return worker
 
 if __name__ == "__main__":
-    from Worker_params import Worker_params
-    param1 = {"textile":5,
-              "armor":5,
-              "metal":5,
-              "weapon":5,
-              "wood":-1,
-              "alchemy":-1,
-              "magic":-1,
-              "tinker":-1,
-              "jewel":-1,
-              "arts_crafts":-1,
-              "rune":-1,
-              "mastery":5}
-    
-    params = Worker_params(param1)
-    worker = Worker(params)
-    worker.level = 30
-    worker.skill_per_level = 5
-    worker.random_skills()
+    worker_name = "master"
+    wl = WorkerLoader(worker_name, 30)
+    worker = wl.get_worker() 
     print (worker)

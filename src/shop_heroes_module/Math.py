@@ -83,79 +83,26 @@ class SkillOptimizer():
 
 if __name__ == "__main__":
     from Worker_params import Worker_params
-    from Worker import Worker
-    from Item import Item
-    from Item import Item_params
+    from Worker import Worker, WorkerLoader
+    from Item import Item, ItemLoader
+    
+    il = ItemLoader("wisdom-ocarina")
+    item = il.get_item()
 
-    param1 = {"textile":5,
-              "armor":5,
-              "metal":5,
-              "weapon":5,
-              "wood":5,
-              "alchemy":-1,
-              "magic":-1,
-              "tinker":-1,
-              "jewel":-1,
-              "arts_crafts":-1,
-              "rune":-1,
-              "mastery":5}
-    
-    params_worker1 = Worker_params(param1)
-    worker1 = Worker(params_worker1)
-    worker1.level = 50
-    worker1.skill_per_level = 5
-    
-    param2 = {"textile":-1,
-              "armor":5,
-              "metal":-1,
-              "weapon":5,
-              "wood":-1,
-              "alchemy":5,
-              "magic":-1,
-              "tinker":5,
-              "jewel":-1,
-              "arts_crafts":5,
-              "rune":-1,
-              "mastery":5}
-    
-    params_worker2 = Worker_params(param2)
-    worker2 = Worker(params_worker2)
-    worker2.level = 45
-    worker2.skill_per_level = 10
+    worker_name_level_list = [("master",34),
+                              ("seamstress",37),
+                              ("sculptor",39),
+                              ("artisan",39),
+                              ("wizard",38),
+                              ("alchemist",36),
+                              ("the-giant",36),
+                              ("luthier",31)]
 
-    param3 = {"textile":5,
-              "armor":-1,
-              "metal":5,
-              "weapon":5,
-              "wood":-1,
-              "alchemy":-1,
-              "magic":-1,
-              "tinker":5,
-              "jewel":-1,
-              "arts_crafts":-1,
-              "rune":5,
-              "mastery":5}
     
-    params_worker3 = Worker_params(param3)
-    worker3 = Worker(params_worker3)
-    worker3.level = 40
-    worker3.skill_per_level = 12
+    list_workers = []
+    for worker_name_level in worker_name_level_list:
+        worker_loader = WorkerLoader(worker_name_level[0], worker_name_level[1])
+        list_workers.append(worker_loader.get_worker())
     
-    param_item  =   {"textile":500,
-                    "armor":0,
-                    "metal":1500,
-                    "weapon":2500,
-                    "wood":0,
-                    "alchemy":200,
-                    "magic":0,
-                    "tinker":0,
-                    "jewel":0,
-                    "arts_crafts":0,
-                    "rune":0}
-    
-    params = Item_params(param_item)
-    item = Item(params)
-    
-    list_workers = [worker1, worker2, worker3]
     skill_opt = SkillOptimizer(item, list_workers)
     skill_opt.optimize()

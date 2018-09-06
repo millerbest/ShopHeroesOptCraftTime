@@ -1,4 +1,8 @@
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "db"))
 
+from item_db import item_db
 
 class Item():
     def __init__(self, params):
@@ -72,41 +76,52 @@ class Item_params():
         else:
             raise Exception("wrong number of input")
 
+class ItemLoader():
+    def __init__(self, item_name):
+        self.db = item_db
+        self.item_data = self.db[item_name]
+        self.item_params = self._get_skills()
+
+    def _get_skills(self):
+        skills = self.item_data["skills"]
+        item_params = Item_params()
+        for k in skills.keys():
+            if k ==  'textile-working':
+                item_params.textile = skills[k]
+            elif k == "armor-crafting":
+                item_params.armor = skills[k]
+            elif k == 'metal-working':
+                item_params.metal = skills[k]
+            elif k == "weapon-crafting":
+                item_params.weapon = skills[k]
+            elif k == "wood-working":
+                item_params.wood = skills[k]
+            elif k == "alchemy":
+                item_params.alchemy = skills[k]
+            elif k == "magic":
+                item_params.magic = skills[k]
+            elif k == "tinkering":
+                item_params.tinker = skills[k]
+            elif k == "jewelry":
+                item_params.jewel = skills[k]
+            elif k == "arts-and-crafts":
+                item_params.arts_crafts = skills[k]
+            elif k == "rune-writing":
+                item_params.rune = skills[k]
+        return item_params
+            
+    def get_item(self):
+        item = Item(self.item_params)
+        return item
+
+        
+
 if __name__ == "__main__":
-    from Worker import Worker
-    from Worker_params import Worker_params
-    param1 = {"textile":500,
-              "armor":500,
-              "metal":500,
-              "weapon":500,
-              "wood":500,
-              "alchemy":500,
-              "magic":500,
-              "tinker":500,
-              "jewel":500,
-              "arts_crafts":500,
-              "rune":500}
-    
-    params = Item_params(param1)
-    item = Item(params)
-
-    param_w = {"textile":10,
-               "armor":10,
-               "metal":10,
-               "weapon":10,
-               "wood":10,
-               "alchemy":10,
-               "magic":10,
-               "tinker":10,
-               "jewel":10,
-               "arts_crafts":10,
-               "rune":10,
-               "mastery":10}
-    
-    params = Worker_params(param_w)
-    worker = Worker(params)
-    worker.level = 30
-    worker.skill_per_level = 5
-    worker.random_skills()
-
-    print (item.getCraftTime(worker))
+    item_name = "nordic-lute"
+    itemLoader = ItemLoader(item_name)
+    item = itemLoader.get_item()
+    print (item.alchemy)
+    print (item.wood)
+    print (item.textile)
+    print (item.arts_crafts)
+    print (item.jewel)
