@@ -81,6 +81,55 @@ class SkillOptimizer():
         print (res)
         return res
 
+class SkillRandom():
+    def __init__(self, item, list_workers, n):
+        self.item = item
+        self.list_workers = list_workers
+        self.item_param = self._get_item_parameters()
+        self.n = n
+    def _get_item_parameters(self):
+        return [self.item.textile,
+                self.item.armor,
+                self.item.metal,
+                self.item.weapon,
+                self.item.wood,
+                self.item.alchemy,
+                self.item.magic,
+                self.item.tinker,
+                self.item.jewel,
+                self.item.arts_crafts,
+                self.item.rune]
+
+    def _random(self):
+        new_worker_list = []
+        for worker in self.list_workers:
+            worker.random_skills()
+            new_worker_list.append(worker)
+        return new_worker_list
+
+    def run(self):
+        list_results = []
+        list_tried_wokers = []
+        for i in range(0, self.n):
+            worker_params = Worker_params()
+            new_worker_list = self._random()
+            for worker in new_worker_list:
+                worker_params += worker.get_worker_params()
+            list_results.append(self.item.getCraftTime(worker_params))
+            list_tried_wokers.append(new_worker_list)
+
+        import matplotlib.pyplot as plt
+        print (np.min(list_results))
+        for w in list_tried_wokers[np.argmin(list_results)]:
+            print (w)
+        
+
+
+        plt.hist(list_results, bins=np.arange(0, 2000, 10))
+        plt.show()
+
+
+
 if __name__ == "__main__":
     from Worker_params import Worker_params
     from Worker import Worker, WorkerLoader
@@ -104,5 +153,9 @@ if __name__ == "__main__":
         worker_loader = WorkerLoader(worker_name_level[0], worker_name_level[1])
         list_workers.append(worker_loader.get_worker())
     
-    skill_opt = SkillOptimizer(item, list_workers)
-    skill_opt.optimize()
+
+    skillRandom = SkillRandom(item, list_workers, 10000)
+    skillRandom.run()
+
+    #skill_opt = SkillOptimizer(item, list_workers)
+    #skill_opt.optimize()
