@@ -4,7 +4,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "db"))
 from worker_db import worker_db
-from Worker_params import Worker_params
+from shop_heroes_module.Worker_params import Worker_params
 
 class Worker():
     def __init__(self, params):
@@ -26,6 +26,31 @@ class Worker():
         self.level = 0
         self.skill_per_level = 0
         self.init_skill_points = 0
+
+    def set_rough_init_skill_points(self):
+        if self.textile != -1:
+            self.textile = self.init_skill_points
+        if self.armor != -1:
+            self.armor = self.init_skill_points
+        if self.metal != -1:
+            self.metal = self.init_skill_points
+        if self.weapon != -1:
+            self.weapon = self.init_skill_points
+        if self.wood != -1:
+            self.wood = self.init_skill_points
+        if self.alchemy != -1:
+            self.alchemy = self.init_skill_points
+        if self.magic != -1:
+            self.magic = self.init_skill_points
+        if self.tinker != -1:
+            self.tinker = self.init_skill_points
+        if self.jewel != -1:
+            self.jewel = self.init_skill_points
+        if self.arts_crafts != -1:
+            self.arts_crafts = self.init_skill_points
+        if self.rune != -1:
+            self.rune = self.init_skill_points
+        return 
 
     def _parse_property(self, params):
         self.textile = params.textile
@@ -83,6 +108,7 @@ class Worker():
                      self.mastery]:
             if item >= 0:
                 result += item
+        result = result - self.get_init_total_skill_points()
         return result
 
     def random_skills(self):
@@ -125,10 +151,38 @@ class Worker():
         """Get the constraints that will be used for scipy optimizer""" 
         total_free_skills_points = self.level * self.skill_per_level
         total_used_skill_points = self.get_total_used_skill_points()
-        total_skills_points = total_free_skills_points + total_used_skill_points
+        total_skills_points = total_free_skills_points - total_used_skill_points
         #Not finished
         return total_skills_points
-        
+    
+    def get_init_total_skill_points(self):
+        counter = 0
+        if self.textile != -1:
+            counter += 1
+        if self.armor != -1:
+            counter += 1
+        if self.metal != -1:
+            counter += 1
+        if self.weapon != -1:
+            counter += 1
+        if self.wood != -1:
+            counter += 1
+        if self.alchemy != -1:
+            counter += 1
+        if self.magic != -1:
+            counter += 1
+        if self.tinker != -1:
+            counter += 1
+        if self.jewel != -1:
+            counter += 1
+        if self.arts_crafts != -1:
+            counter += 1
+        if self.rune != -1:
+            counter += 1
+        if self.mastery != -1:
+            counter += 1
+        return counter * self.init_skill_points
+
     def get_worker_params(self):
         result = Worker_params({"textile":self.textile,
                                 "armor":self.armor,
@@ -193,28 +247,28 @@ class WorkerLoader():
 
         for k in self.worker_data.keys():
             if k.startswith("skill"):
-                if self.worker_data[k] == 'textile-working':
-                    worker_params.textile = 0
-                elif self.worker_data[k] == "armor-crafting":
-                    worker_params.armor = 0
-                elif self.worker_data[k] == 'metal-working':
-                    worker_params.metal = 0
-                elif self.worker_data[k] == "weapon-crafting":
-                    worker_params.weapon = 0
-                elif self.worker_data[k] == "wood-working":
-                    worker_params.wood = 0
-                elif self.worker_data[k] == "alchemy":
-                    worker_params.alchemy = 0
-                elif self.worker_data[k] == "magic":
-                    worker_params.magic = 0
-                elif self.worker_data[k] == "tinkering":
-                    worker_params.tinker = 0
-                elif self.worker_data[k] == "jewelry":
-                    worker_params.jewel = 0
-                elif self.worker_data[k] == "arts-and-crafts":
-                    worker_params.arts_crafts = 0
-                elif self.worker_data[k] == "rune-writing":
-                    worker_params.rune = 0
+                if self.worker_data[k][0] == 'textile-working':
+                    worker_params.textile = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "armor-crafting":
+                    worker_params.armor = self.worker_data[k][1]
+                elif self.worker_data[k][0] == 'metal-working':
+                    worker_params.metal = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "weapon-crafting":
+                    worker_params.weapon = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "wood-working":
+                    worker_params.wood = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "alchemy":
+                    worker_params.alchemy = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "magic":
+                    worker_params.magic = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "tinkering":
+                    worker_params.tinker = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "jewelry":
+                    worker_params.jewel = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "arts-and-crafts":
+                    worker_params.arts_crafts = self.worker_data[k][1]
+                elif self.worker_data[k][0] == "rune-writing":
+                    worker_params.rune = self.worker_data[k][1]
         return worker_params
 
     def get_worker(self):

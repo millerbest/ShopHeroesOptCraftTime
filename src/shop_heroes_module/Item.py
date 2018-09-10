@@ -143,8 +143,18 @@ if __name__ == "__main__":
     item_name = "nordic-lute"
     itemLoader = ItemLoader(item_name)
     item = itemLoader.get_item()
-    print (item.alchemy)
-    print (item.wood)
-    print (item.textile)
-    print (item.arts_crafts)
-    print (item.jewel)
+    
+    from Worker_params import Worker_params
+    wp = Worker_params({"textile":100,
+                        "armor":100,
+                        "metal":100,
+                        "weapon":100,
+                        "wood":100,
+                        "alchemy":100,
+                        "magic":100,
+                        "tinker":100,
+                        "jewel":100,
+                        "arts_crafts":100,
+                        "rune":100,
+                        "mastery":0})
+    print (item.getCraftTime(wp))
