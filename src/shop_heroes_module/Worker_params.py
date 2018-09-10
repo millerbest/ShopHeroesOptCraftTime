@@ -60,6 +60,26 @@ class Worker_params():
         result.jewel = self.jewel - other.jewel
         result.arts_crafts = self.arts_crafts - other.arts_crafts
         result.rune = self.rune - other.rune
-        result.rune = self.mastery - other.mastery
+        result.mastery = self.mastery - other.mastery
         return result
 
+    def __str__(self):
+        text = "textile: %s\narmor: %s\nmetal: %s\nweapon: %s\nwood: %s\nalchemy: %s\nmagic: %s\ntinker: %s\n\
+jewel: %s\narts_crafts: %s\nrune: %s\nmastery: %s\n" %\
+               (self.textile,
+                self.armor,
+                self.metal,
+                self.weapon,
+                self.wood,
+                self.alchemy,
+                self.magic,
+                self.tinker,
+                self.jewel,
+                self.arts_crafts,
+                self.rune,
+                self.mastery)
+        return text
+
+if __name__ == "__main__":
+    w_p = Worker_params()
+    print (w_p)

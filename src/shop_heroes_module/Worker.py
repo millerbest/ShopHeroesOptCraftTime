@@ -129,7 +129,20 @@ class Worker():
         #Not finished
         return total_skills_points
         
-        
+    def get_worker_params(self):
+        result = Worker_params({"textile":self.textile,
+                                "armor":self.armor,
+                                "metal":self.metal,
+                                "weapon":self.weapon,
+                                "wood":self.wood,
+                                "alchemy":self.alchemy,
+                                "magic":self.magic,
+                                "tinker":self.tinker,
+                                "jewel":self.jewel,
+                                "arts_crafts":self.arts_crafts,
+                                "rune":self.rune,
+                                "mastery":self.mastery})
+        return result
 
     def __str__(self):
         return ("\

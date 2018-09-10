@@ -33,6 +33,29 @@ class Item():
         self.rune = params.rune
 
     def getCraftTime(self, param_worker):
+        if param_worker.textile < 0:
+            param_worker.textile = 0.0001
+        elif param_worker.armor < 0:
+            param_worker.armor = 0.0001
+        elif param_worker.metal < 0:
+            param_worker.metal = 0.0001
+        elif param_worker.weapon < 0:
+            param_worker.weapon = 0.0001
+        elif param_worker.wood < 0:
+            param_worker.wood = 0.0001
+        elif param_worker.alchemy < 0:
+            param_worker.alchemy = 0.0001
+        elif param_worker.magic < 0:
+            param_worker.magic = 0.0001
+        elif param_worker.tinker < 0:
+            param_worker.tinker = 0.0001
+        elif param_worker.jewel < 0:
+            param_worker.jewel = 0.0001
+        elif param_worker.arts_crafts < 0:
+            param_worker.arts_crafts = 0.0001
+        elif param_worker.rune < 0:
+            param_worker.rune = 0.0001
+
         return (self.textile / param_worker.textile + \
                 self.armor / param_worker.armor +
                 self.metal / param_worker.metal +
