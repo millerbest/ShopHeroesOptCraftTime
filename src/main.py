@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 if __name__ == "__main__":
 
     #Parameters
-    item_name = "valkyries-wisdom"  
+    item_name = "GuZheng"  
     worker_name_level_list = [("master",35),
                               ("seamstress",37),
                               ("sculptor",39),
@@ -28,11 +28,14 @@ if __name__ == "__main__":
     item = il.get_item()
     octc = Optimial_craft_time_calculator(item, worker_name_level_list)
     list_workers, time_craft, points_left, mastery_rate = octc.run()
+    worker_params = Worker_params()
     for idx, worker in enumerate(list_workers):
+        worker_params += worker.get_worker_params()
         print (worker_name_level_list[idx][0])
         print (worker.get_worker_params())
         print ("\n")
-
+    print (worker_params)
+    print (item.getCraftTime(worker_params))
     #start plot
     fig, ax1 = plt.subplots()
     ax1.plot(time_craft, color = "r")

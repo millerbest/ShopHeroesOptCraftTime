@@ -31,36 +31,42 @@ class Worker_params():
         else:
             raise Exception("wrong number of input")
 
+    def _minus_filter(self, value):
+        if value < 0 :
+            return 0
+        else: 
+            return value
+
     def __add__(self, other):
         result = Worker_params()
-        result.textile = self.textile + other.textile
-        result.armor = self.armor + other.armor
-        result.metal = self.metal + other.metal
-        result.weapon = self.weapon + other.weapon
-        result.wood = self.wood + other.wood
-        result.alchemy = self.alchemy + other.alchemy
-        result.magic = self.magic + other.magic
-        result.tinker = self.tinker + other.tinker
-        result.jewel = self.jewel + other.jewel
-        result.arts_crafts = self.arts_crafts + other.arts_crafts
-        result.rune = self.rune + other.rune
-        result.mastery = self.mastery + other.mastery
+        result.textile = self._minus_filter(self.textile) + self._minus_filter(other.textile)
+        result.armor = self._minus_filter(self.armor) + self._minus_filter(other.armor)
+        result.metal = self._minus_filter(self.metal) + self._minus_filter(other.metal)
+        result.weapon = self._minus_filter(self.weapon) + self._minus_filter(other.weapon)
+        result.wood = self._minus_filter(self.wood) + self._minus_filter(other.wood)
+        result.alchemy = self._minus_filter(self.alchemy) + self._minus_filter(other.alchemy)
+        result.magic = self._minus_filter(self.magic) + self._minus_filter(other.magic)
+        result.tinker = self._minus_filter(self.tinker) + self._minus_filter(other.tinker)
+        result.jewel = self._minus_filter(self.jewel) + self._minus_filter(other.jewel)
+        result.arts_crafts = self._minus_filter(self.arts_crafts) + self._minus_filter(other.arts_crafts)
+        result.rune = self._minus_filter(self.rune) + self._minus_filter(other.rune)
+        result.mastery = self._minus_filter(self.mastery) + self._minus_filter(other.mastery)
         return result
 
     def __sub__(self, other):
         result = Worker_params()
-        result.textile = self.textile - other.textile
-        result.armor = self.armor - other.armor
-        result.metal = self.metal - other.metal
-        result.weapon = self.weapon - other.weapon
-        result.wood = self.wood - other.wood
-        result.alchemy = self.alchemy - other.alchemy
-        result.magic = self.magic - other.magic
-        result.tinker = self.tinker - other.tinker
-        result.jewel = self.jewel - other.jewel
-        result.arts_crafts = self.arts_crafts - other.arts_crafts
-        result.rune = self.rune - other.rune
-        result.mastery = self.mastery - other.mastery
+        result.textile = self._minus_filter(self.textile) - self._minus_filter(other.textile)
+        result.armor = self._minus_filter(self.armor) - self._minus_filter(other.armor)
+        result.metal = self._minus_filter(self.metal) - self._minus_filter(other.metal)
+        result.weapon = self._minus_filter(self.weapon) - self._minus_filter(other.weapon)
+        result.wood = self._minus_filter(self.wood) - self._minus_filter(other.wood)
+        result.alchemy = self._minus_filter(self.alchemy) - self._minus_filter(other.alchemy)
+        result.magic = self._minus_filter(self.magic) - self._minus_filter(other.magic)
+        result.tinker = self._minus_filter(self.tinker) - self._minus_filter(other.tinker)
+        result.jewel = self._minus_filter(self.jewel) - self._minus_filter(other.jewel)
+        result.arts_crafts = self._minus_filter(self.arts_crafts) - self._minus_filter(other.arts_crafts)
+        result.rune = self._minus_filter(self.rune) - self._minus_filter(other.rune)
+        result.mastery = self._minus_filter(self.mastery) - self._minus_filter(other.mastery)
         return result
 
     def __str__(self):

@@ -286,7 +286,7 @@ class Optimial_craft_time_calculator():
         time_craft = []
         points_left = []
         mastery_rate = []
-        for i in range(0, 3000): #50*12*8
+        for i in range(0, 2000): #50*12*8
             current_worker = self.list_workers[i%len(self.list_workers)]
             rest_worker_params = [w.get_worker_params() for idx,w in\
                                      enumerate(self.list_workers) if idx != i%8]
@@ -309,7 +309,7 @@ if __name__ == "__main__":
     from Worker import Worker, WorkerLoader
     from Item import Item, ItemLoader
     
-    il = ItemLoader("valkyries-wisdom")
+    il = ItemLoader("fangtian-pike")
     item = il.get_item()
 
     worker_name_level_list = [("master",35),
