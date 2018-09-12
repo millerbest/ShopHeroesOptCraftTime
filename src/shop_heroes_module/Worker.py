@@ -4,6 +4,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "db"))
 from worker_db import worker_db
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 from shop_heroes_module.Worker_params import Worker_params
 
 class Worker():
@@ -225,7 +226,7 @@ class Worker():
                                     self.mastery)
 
 class WorkerLoader():
-    def __init__(self, worker_name, level):
+    def __init__(self, worker_name, level=30):
         self.db = worker_db
         self.worker_data = self.db[worker_name]
         self.worker_params = self._get_worker_parameters()
