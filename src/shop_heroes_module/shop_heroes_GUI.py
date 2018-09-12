@@ -3,7 +3,17 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "db"))
 from worker_db import worker_db
+from item_db import item_db
 from Worker import WorkerLoader as WorkerLoader
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+
+from shop_heroes_module.Worker_params import Worker_params
+from shop_heroes_module.Worker import Worker, WorkerLoader
+from shop_heroes_module.Item import Item, ItemLoader
+from shop_heroes_module.Math import Optimial_craft_time_calculator
+import numpy as np
+import matplotlib.pyplot as plt
 
 class Opt_Craft_App(wx.Frame):
     def __init__(self, parent, title, version): 
@@ -22,15 +32,42 @@ class Opt_Craft_App(wx.Frame):
         self.worker_sizer = wx.FlexGridSizer(cols=15, hgap=4, vgap=4)
         self._create_worker_sizer(self.panel)
 
+        self.item_sizer = wx.FlexGridSizer(cols=9, hgap = 6, vgap = 6)
+        self._create_item_sizer(self.panel)
         main_sizer.Add(self.worker_sizer, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
                        border=5)
-
+        main_sizer.Add(self.item_sizer, pos=(1, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
+                       border=5)
         self.panel.SetSizer(main_sizer)
 
     def _create_worker_sizer(self, parent):
         self._crate_worker_header(parent, self.worker_sizer)
         for i in range(0, 8):
            self._create_worker_tbox(parent, self.worker_sizer, i)
+        return
+
+    def _create_item_sizer(self, parent):
+        st1 = wx.StaticText(parent, -1, "Item: ", style = wx.ALIGN_CENTRE_HORIZONTAL)
+        self.item_name_list = []
+        self.item_catagory = list(set([item_db[k]["category"] for k in item_db.keys()]))
+        self.item_cb1 = wx.Choice(parent, size = (100, -1), choices = list(self.item_catagory), name = "item_cb_1" )
+        self.item_cb1.Bind(wx.EVT_CHOICE, self.OnChoice_item_cb1)
+        self.item_cb2 = wx.Choice(parent, size = (200, -1), choices = list(self.item_name_list), name = "item_cb_2" )
+        self.button_run = wx.Button(parent, label = "Run", size = (100, -1))
+        self.button_run.Bind(wx.EVT_BUTTON, self.OnButtonRun)
+        self.item_cb2.Bind(wx.EVT_CHOICE, self.OnChoice_item_cb2)
+        st2 = wx.StaticText(parent, -1, "Total skill points: ", style = wx.ALIGN_CENTRE_HORIZONTAL)
+        self.tc_total_points = wx.TextCtrl(parent, -1, size = (80, -1))
+        self.item_sizer.AddMany([wx.StaticText(parent, -1, "", size=(20,20)),
+                                 st1, self.item_cb1, 
+                                 self.item_cb2, 
+                                 wx.StaticText(parent, -1, "", size=(50,20)),
+                                 st2,
+                                 self.tc_total_points,
+                                 wx.StaticText(parent, -1, "", size=(50,20)),
+                                 self.button_run])
+        
+        return
 
     def _create_worker_tbox(self, parent, sizer, idx_row):
         width_tc = 50
@@ -94,7 +131,7 @@ class Opt_Craft_App(wx.Frame):
         wl = WorkerLoader(current_worker_name)
         worker_params = wl.get_worker().get_worker_params()
         choice_id = current_choice.Name
-        self._set_init_worker_values(worker_params, choice_id)
+        self._set_worker_values(worker_params, choice_id)
         return 
 
     def _get_tc_by_name(self, name):
@@ -105,7 +142,15 @@ class Opt_Craft_App(wx.Frame):
                 result = ctrl
         return result
 
-    def _set_init_worker_values(self, worker_params, choice_id):       
+    def _get_choice_by_name(self, name):
+        choices = [widget for widget in self.panel.GetChildren() if isinstance(widget, wx.Choice)]
+        result = False
+        for ctrl in choices:
+            if ctrl.GetName() == name:      
+                result = ctrl
+        return result
+
+    def _set_worker_values(self, worker_params, choice_id):       
         for idx, param in enumerate([worker_params.textile,
                                     worker_params.armor,
                                     worker_params.metal,
@@ -128,6 +173,73 @@ class Opt_Craft_App(wx.Frame):
 
         return 
         
+    def OnChoice_item_cb1(self, event):
+        current_choice = event.GetEventObject()
+        category = current_choice.GetString(current_choice.GetSelection())
+        item_list = [(key,item_db[key]["name"]) for key in item_db.keys() if item_db[key]["category"] == category]
+        self.item_name_list = [v[1] for v in item_list]
+        self.item_internal_name_list = [v[0] for v in item_list]
+        self.item_cb2.Clear() # Clear the current user list
+        self.item_cb2.AppendItems(self.item_name_list) # Repopulate the list
+        self.item_cb2.SetSelection(-1)
+        return
+
+    def OnChoice_item_cb2(self, event):
+        current_choice = event.GetEventObject()
+        self.item_internal_name = self.item_internal_name_list[current_choice.GetSelection()]
+        return
+
+    
+    def OnButtonRun(self, event):
+        item_name = self.item_internal_name  
+        worker_name_level_list = self._get_worker_name_level_list()
+
+        if self.tc_total_points.GetValue().isdigit():
+            total_skill_points = int(self.tc_total_points.GetValue())
+        else:
+            total_skill_points = 3000
+
+        il = ItemLoader(item_name)
+        
+        item = il.get_item()
+        octc = Optimial_craft_time_calculator(item, worker_name_level_list, total_skill_points)
+
+        list_workers, time_craft, points_left, mastery_rate = octc.run()
+
+        worker_params = Worker_params()
+        for idx, worker in enumerate(list_workers):
+            worker_params += worker.get_worker_params()
+            
+            self._set_worker_values(worker.get_worker_params(), "cb_%s" % (idx))
+
+        # print (item.getCraftTime(worker_params))
+        #start plot
+        
+        fig, ax1 = plt.subplots()
+        ax1.plot(time_craft, color = "r")
+        ax2 = ax1.twinx()
+        ax2.plot(np.array(mastery_rate)[:,0], color = "g", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,1], color = "b", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,2], color = "c", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,3], color = "purple", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,4], color = "orange", linestyle = "--")
+
+        ax1.set_xlabel("Points added")
+        ax1.set_ylabel("Craft time [min]")
+        ax2.set_ylabel("Percentage [%]")
+        plt.grid()
+        plt.show()
+
+    def _get_worker_name_level_list(self):
+        result = []
+        for i in range(0, 8):
+            cb_worker_name = self._get_choice_by_name("cb_%s" % (i))
+            tc_level = self._get_tc_by_name("tc_%s_0" % (i))
+            worker_name = cb_worker_name.GetString(cb_worker_name.GetSelection())
+            level = tc_level.GetValue()
+            if worker_name != "" and level.isdigit():
+                result.append((worker_name, int(level)))
+        return result
 
 if __name__ == "__main__":
     app = wx.App(False)

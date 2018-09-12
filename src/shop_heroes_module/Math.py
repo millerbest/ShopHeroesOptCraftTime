@@ -257,10 +257,10 @@ class LargestGradientOptimizer():
         self._add_point_to_largest_gradient(gradients)
 
 class Optimial_craft_time_calculator():
-    def __init__(self, item, worker_name_level_list):
+    def __init__(self, item, worker_name_level_list, total_investigated_skill_points):
         self.item = item
         self.list_workers = self._load_workers(worker_name_level_list)
-
+        self.total_investigated_skill_points = total_investigated_skill_points 
     def _load_workers(self, worker_name_level_list):
         list_workers = []
         for worker_name_level in worker_name_level_list:
@@ -286,7 +286,7 @@ class Optimial_craft_time_calculator():
         time_craft = []
         points_left = []
         mastery_rate = []
-        for i in range(0, 2000): #50*12*8
+        for i in range(0, self.total_investigated_skill_points): #50*12*8
             current_worker = self.list_workers[i%len(self.list_workers)]
             rest_worker_params = [w.get_worker_params() for idx,w in\
                                      enumerate(self.list_workers) if idx != i%8]
@@ -323,7 +323,7 @@ if __name__ == "__main__":
 
     
     
-    octc = Optimial_craft_time_calculator(item, worker_name_level_list)
+    octc = Optimial_craft_time_calculator(item, worker_name_level_list, 3000)
     list_workers, time_craft, points_left, mastery_rate = octc.run()
 
     import matplotlib.pyplot as plt
