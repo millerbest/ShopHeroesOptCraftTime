@@ -34,16 +34,23 @@ class Opt_Craft_App(wx.Frame):
 
         self.item_sizer = wx.FlexGridSizer(cols=9, hgap = 6, vgap = 6)
         self._create_item_sizer(self.panel)
+        
+        self.result_sizer = wx.FlexGridSizer(cols=3, hgap=8, vgap = 6)
+        self._create_result_sizer(self.panel)
+
         main_sizer.Add(self.worker_sizer, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
                        border=5)
         main_sizer.Add(self.item_sizer, pos=(1, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
                        border=5)
+        main_sizer.Add(self.result_sizer, pos=(2, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
+                       border=30)
         self.panel.SetSizer(main_sizer)
 
     def _create_worker_sizer(self, parent):
         self._crate_worker_header(parent, self.worker_sizer)
         for i in range(0, 8):
            self._create_worker_tbox(parent, self.worker_sizer, i)
+        self._set_tab_order()
         return
 
     def _create_item_sizer(self, parent):
@@ -67,6 +74,53 @@ class Opt_Craft_App(wx.Frame):
                                  wx.StaticText(parent, -1, "", size=(50,20)),
                                  self.button_run])
         
+        return
+
+    def _create_result_sizer(self, parent):
+        size_text_box = 250
+        font = wx.Font(20, wx.DECORATIVE, wx.ITALIC, wx.FONTWEIGHT_BOLD)
+
+        st1 = wx.StaticText(parent, -1, "Craft Time: ", style = wx.ALIGN_RIGHT, size=(size_text_box, -1))
+        st1.SetForegroundColour((0, 0, 0))
+        st2 = wx.StaticText(parent, -1, "Good rate: ", style = wx.ALIGN_RIGHT,size=(size_text_box, -1))
+        st2.SetForegroundColour((0, 164, 0))
+        st3 = wx.StaticText(parent, -1, "Great rate: ", style = wx.ALIGN_RIGHT,size=(size_text_box, -1))
+        st3.SetForegroundColour((0, 0, 255))
+        st4 = wx.StaticText(parent, -1, "Flawless rate: ", style = wx.ALIGN_RIGHT,size=(size_text_box, -1))
+        st4.SetForegroundColour((0, 188, 238))
+        st5 = wx.StaticText(parent, -1, "Epic rate: ", style = wx.ALIGN_RIGHT,size=(size_text_box, -1))
+        st5.SetForegroundColour((228, 2, 217))
+        st6 = wx.StaticText(parent, -1, "Legendary rate: ", style = wx.ALIGN_RIGHT,size=(size_text_box, -1))
+        st6.SetForegroundColour((212, 227, 0))
+
+        st7 = wx.StaticText(parent, -1, "", style = wx.ALIGN_LEFT, size=(size_text_box, -1),name = "tc_result_1")
+        st7.SetForegroundColour((0, 0, 0))
+        st8 = wx.StaticText(parent, -1, "", style = wx.ALIGN_LEFT, size=(size_text_box, -1),name = "tc_result_2")
+        st8.SetForegroundColour((0, 164, 0))
+        st9 = wx.StaticText(parent, -1, "", style = wx.ALIGN_LEFT, size=(size_text_box, -1),name = "tc_result_3")
+        st9.SetForegroundColour((0, 0, 255))
+        st10 = wx.StaticText(parent, -1, "", style = wx.ALIGN_LEFT, size=(size_text_box, -1),name = "tc_result_4")
+        st10.SetForegroundColour((0, 188, 238))
+        st11 = wx.StaticText(parent, -1, "", style = wx.ALIGN_LEFT, size=(size_text_box, -1),name = "tc_result_5")
+        st11.SetForegroundColour((228, 2, 217))
+        st12 = wx.StaticText(parent, -1, "", style = wx.ALIGN_LEFT, size=(size_text_box, -1),name = "tc_result_6")
+        st12.SetForegroundColour((212, 227, 0))
+
+        
+        for st in [st1, st2, st3, st4, st5, st6, st7, st8, st9, st10, st11, st12]:
+            st.SetFont(font)
+        self.result_sizer.AddMany([wx.StaticText(parent, -1, "", size=(20,20)),
+                                   st1, st7,
+                                   wx.StaticText(parent, -1, "", size=(20,20)),
+                                   st2, st8,
+                                   wx.StaticText(parent, -1, "", size=(20,20)),
+                                   st3, st9,
+                                   wx.StaticText(parent, -1, "", size=(20,20)),
+                                   st4, st10,
+                                   wx.StaticText(parent, -1, "", size=(20,20)),
+                                   st5, st11,
+                                   wx.StaticText(parent, -1, "", size=(20,20)),
+                                   st6, st12])
         return
 
     def _create_worker_tbox(self, parent, sizer, idx_row):
@@ -150,6 +204,14 @@ class Opt_Craft_App(wx.Frame):
                 result = ctrl
         return result
 
+    def _get_st_by_name(self, name):
+        sts = [widget for widget in self.panel.GetChildren() if isinstance(widget, wx.StaticText)]
+        result = False
+        for ctrl in sts:
+            if ctrl.GetName() == name:      
+                result = ctrl
+        return result
+
     def _set_worker_values(self, worker_params, choice_id):       
         for idx, param in enumerate([worker_params.textile,
                                     worker_params.armor,
@@ -189,7 +251,6 @@ class Opt_Craft_App(wx.Frame):
         self.item_internal_name = self.item_internal_name_list[current_choice.GetSelection()]
         return
 
-    
     def OnButtonRun(self, event):
         item_name = self.item_internal_name  
         worker_name_level_list = self._get_worker_name_level_list()
@@ -212,23 +273,37 @@ class Opt_Craft_App(wx.Frame):
             
             self._set_worker_values(worker.get_worker_params(), "cb_%s" % (idx))
 
-        # print (item.getCraftTime(worker_params))
+        self._update_results(time_craft[-1], mastery_rate[-1])
         #start plot
         
-        fig, ax1 = plt.subplots()
-        ax1.plot(time_craft, color = "r")
-        ax2 = ax1.twinx()
-        ax2.plot(np.array(mastery_rate)[:,0], color = "g", linestyle = "--")
-        ax2.plot(np.array(mastery_rate)[:,1], color = "b", linestyle = "--")
-        ax2.plot(np.array(mastery_rate)[:,2], color = "c", linestyle = "--")
-        ax2.plot(np.array(mastery_rate)[:,3], color = "purple", linestyle = "--")
-        ax2.plot(np.array(mastery_rate)[:,4], color = "orange", linestyle = "--")
+        # fig, ax1 = plt.subplots()
+        # ax1.plot(time_craft, color = "r")
+        # ax2 = ax1.twinx()
+        # ax2.plot(np.array(mastery_rate)[:,0], color = "g", linestyle = "--")
+        # ax2.plot(np.array(mastery_rate)[:,1], color = "b", linestyle = "--")
+        # ax2.plot(np.array(mastery_rate)[:,2], color = "c", linestyle = "--")
+        # ax2.plot(np.array(mastery_rate)[:,3], color = "purple", linestyle = "--")
+        # ax2.plot(np.array(mastery_rate)[:,4], color = "orange", linestyle = "--")
 
-        ax1.set_xlabel("Points added")
-        ax1.set_ylabel("Craft time [min]")
-        ax2.set_ylabel("Percentage [%]")
-        plt.grid()
-        plt.show()
+        # ax1.set_xlabel("Points added")
+        # ax1.set_ylabel("Craft time [min]")
+        # ax2.set_ylabel("Percentage [%]")
+        # plt.grid()
+        # plt.show()
+    def _update_results(self, craft_time, mastery_rate):
+        st1 = self._get_st_by_name("tc_result_1")
+        st2 = self._get_st_by_name("tc_result_2")
+        st3 = self._get_st_by_name("tc_result_3")
+        st4 = self._get_st_by_name("tc_result_4")
+        st5 = self._get_st_by_name("tc_result_5")
+        st6 = self._get_st_by_name("tc_result_6")
+        st1.SetLabel("%.02f minutes" % (craft_time))
+        st2.SetLabel("%.02f%%" % (mastery_rate[0]))
+        st3.SetLabel("%.02f%%" % (mastery_rate[1]))
+        st4.SetLabel("%.02f%%" % (mastery_rate[2]))
+        st5.SetLabel("%.02f%%" % (mastery_rate[3]))
+        st6.SetLabel("%.02f%%" % (mastery_rate[4]))
+        return 
 
     def _get_worker_name_level_list(self):
         result = []
@@ -241,6 +316,14 @@ class Opt_Craft_App(wx.Frame):
                 result.append((worker_name, int(level)))
         return result
 
+    def _set_tab_order(self):
+        for i in range(0, 8):
+            if i < 8:
+                current_tc = self._get_tc_by_name("tc_%s_0" % (i))
+                next_tc = self._get_tc_by_name("tc_%s_0" % (i+1))
+                current_tc.MoveAfterInTabOrder(next_tc)
+        return
+        
 if __name__ == "__main__":
     app = wx.App(False)
     frame = Opt_Craft_App(None, "Craft time opt", "v0.1")
