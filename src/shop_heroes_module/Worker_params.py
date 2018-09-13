@@ -1,3 +1,5 @@
+import numpy as np
+
 class Worker_params():
     def __init__(self, *args):
         if len(args) == 0:
@@ -30,6 +32,21 @@ class Worker_params():
         
         else:
             raise Exception("wrong number of input")
+    
+    def _get_max_skill_points(self):
+        return np.max([self.textile,
+                      self.armor,
+                      self.metal,
+                      self.weapon,
+                      self.wood,
+                      self.alchemy,
+                      self.magic,
+                      self.tinker,
+                      self.jewel,
+                      self.arts_crafts,
+                      self.rune,
+                      self.mastery])
+
 
     def _minus_filter(self, value):
         if value < 0 :

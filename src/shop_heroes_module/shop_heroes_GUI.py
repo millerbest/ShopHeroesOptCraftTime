@@ -14,12 +14,18 @@ from shop_heroes_module.Item import Item, ItemLoader
 from shop_heroes_module.Math import Optimial_craft_time_calculator
 import numpy as np
 import matplotlib.pyplot as plt
+import json
 
 class Opt_Craft_App(wx.Frame):
     def __init__(self, parent, title, version): 
         wx.Frame.__init__(self, None, -1, title,
                         size=(850,630),
                         style=wx.DEFAULT_FRAME_STYLE&~(wx.MAXIMIZE_BOX))
+        self.config_path = os.path.join(os.path.dirname(os.path.dirname\
+                           (os.path.realpath(__file__))),"config", "default.json")
+        with open(self.config_path, "r") as f:
+            self.config = json.load(f)
+        
         self.InitUI() 
         self.Centre() 
         self.Show()
@@ -128,7 +134,8 @@ class Opt_Craft_App(wx.Frame):
         align_style = wx.ALIGN_CENTRE_HORIZONTAL
         st = wx.StaticText(parent, -1, str(idx_row+1), size=(20,20), style = align_style)
         cb = wx.Choice(parent, size = (100, -1), choices = list(self.worker_list), name = "cb_%s" % (idx_row))
-        tc0 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_0" % (idx_row))
+        
+        tc0 = wx.TextCtrl(parent, -1, str(self.config["hero%s" % (idx_row+1)]["level"]), size=(width_tc, -1), name = "tc_%s_0" % (idx_row))
         tc1 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_1" % (idx_row))
         tc2 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_2" % (idx_row))
         tc3 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_3" % (idx_row))
@@ -144,8 +151,10 @@ class Opt_Craft_App(wx.Frame):
                     st, cb, tc0, tc1, tc2, tc3, tc4, tc5, tc6, tc7, tc8, tc9, tc10, tc11])
         
         cb.Bind(wx.EVT_CHOICE, self.OnChoice)
+        cb.SetStringSelection(self.config["hero%s" % (idx_row+1)]["name"]) 
+        self._send_event(wx.EVT_CHOICE, cb)
         return 
-
+    
     def _crate_worker_header(self, parent, sizer):
         width_st = 50
         align_style = wx.ALIGN_CENTRE_HORIZONTAL
@@ -274,22 +283,24 @@ class Opt_Craft_App(wx.Frame):
             self._set_worker_values(worker.get_worker_params(), "cb_%s" % (idx))
 
         self._update_results(time_craft[-1], mastery_rate[-1])
+        self._update_config(worker_name_level_list)
+        
         #start plot
         
-        # fig, ax1 = plt.subplots()
-        # ax1.plot(time_craft, color = "r")
-        # ax2 = ax1.twinx()
-        # ax2.plot(np.array(mastery_rate)[:,0], color = "g", linestyle = "--")
-        # ax2.plot(np.array(mastery_rate)[:,1], color = "b", linestyle = "--")
-        # ax2.plot(np.array(mastery_rate)[:,2], color = "c", linestyle = "--")
-        # ax2.plot(np.array(mastery_rate)[:,3], color = "purple", linestyle = "--")
-        # ax2.plot(np.array(mastery_rate)[:,4], color = "orange", linestyle = "--")
+        fig, ax1 = plt.subplots()
+        ax1.plot(time_craft, color = "r")
+        ax2 = ax1.twinx()
+        ax2.plot(np.array(mastery_rate)[:,0], color = "g", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,1], color = "b", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,2], color = "c", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,3], color = "purple", linestyle = "--")
+        ax2.plot(np.array(mastery_rate)[:,4], color = "orange", linestyle = "--")
 
-        # ax1.set_xlabel("Points added")
-        # ax1.set_ylabel("Craft time [min]")
-        # ax2.set_ylabel("Percentage [%]")
-        # plt.grid()
-        # plt.show()
+        ax1.set_xlabel("Points added")
+        ax1.set_ylabel("Craft time [min]")
+        ax2.set_ylabel("Percentage [%]")
+        plt.grid()
+        plt.show()
     def _update_results(self, craft_time, mastery_rate):
         st1 = self._get_st_by_name("tc_result_1")
         st2 = self._get_st_by_name("tc_result_2")
@@ -305,6 +316,19 @@ class Opt_Craft_App(wx.Frame):
         st6.SetLabel("%.02f%%" % (mastery_rate[4]))
         return 
 
+    def _update_config(self,worker_name_level_list):
+        result_dict = {}
+        try:
+            for i,v in enumerate(worker_name_level_list):
+                result_dict["hero%s"%(i+1)] = {"name":v[0],
+                                                "level":v[1]}
+            with open(self.config_path, "w") as f:
+                json.dump(result_dict, f)
+            return
+        except:
+            return
+
+
     def _get_worker_name_level_list(self):
         result = []
         for i in range(0, 8):
@@ -318,12 +342,19 @@ class Opt_Craft_App(wx.Frame):
 
     def _set_tab_order(self):
         for i in range(0, 8):
-            if i < 8:
+            if i < 7:
                 current_tc = self._get_tc_by_name("tc_%s_0" % (i))
-                next_tc = self._get_tc_by_name("tc_%s_0" % (i+1))
-                current_tc.MoveAfterInTabOrder(next_tc)
+                next_tc = self._get_tc_by_name("tc_7_0")
+                current_tc.MoveBeforeInTabOrder(next_tc)
         return
-        
+    
+    def _send_event (self, event, control):
+        cmd = wx.CommandEvent(wx.EVT_CHOICE.evtType[0])
+        cmd.SetEventObject(control)
+        cmd.SetId(control.GetId())
+        control.GetEventHandler().ProcessEvent(cmd)
+        return
+
 if __name__ == "__main__":
     app = wx.App(False)
     frame = Opt_Craft_App(None, "Craft time opt", "v0.1")

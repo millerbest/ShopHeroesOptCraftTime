@@ -1,0 +1,18 @@
+{
+    "hero1":{"name": "master",
+             "level": 35},
+    "hero2":{"name": "seamstress",
+             "level": 37},
+    "hero3":{"name": "sculptor",
+             "level": 39},
+    "hero4":{"name": "artisan",
+             "level": 39},
+    "hero5":{"name": "wizard",
+             "level": 38},
+    "hero6":{"name": "alchemist",
+             "level": 36},
+    "hero7":{"name": "the-giant",
+             "level": 36},
+    "hero8":{"name": "luthier",
+             "level": 31}
+}

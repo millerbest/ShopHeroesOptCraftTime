@@ -11051,7 +11051,7 @@ item_db = \
                                     'rune-writing': 6000},
                       'slug': '',
                       'source': ''},
-    'fangtian-pike': {   'category': 'spear',
+    'fangtian-pike': {   'category': 'spears',
                       'components': {   'lions-tail': (3, 'great')},
                       'level': 44,
                       'name': 'Fangytian Pike',

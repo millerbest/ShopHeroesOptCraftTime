@@ -299,8 +299,16 @@ class Optimial_craft_time_calculator():
 
             self.list_workers[i%8] = lgo.worker
             time_craft.append(self.item.getCraftTime(sum_w_param+lgo.worker.get_worker_params()))
-            points_left.append(np.sum([w.get_total_skill_points() for w in self.list_workers]))
-            mastery_rate.append(self._get_mastery_rate(points_left[-1]))
+            #points_left.append(np.sum([w.get_total_skill_points() for w in self.list_workers]))
+            
+            #mastery_rate.append(self._get_mastery_rate(points_left[-1]))
+            total_mastery = 0
+            for worker in self.list_workers:
+                max_skill_point = worker.get_worker_params()._get_max_skill_points()
+                max_mastery_point = np.min([worker.get_total_skill_points(),
+                                           int((worker.get_total_skill_points()+max_skill_point)/2.)])
+                total_mastery += max_mastery_point
+            mastery_rate.append(self._get_mastery_rate(total_mastery))
 
         return self.list_workers, time_craft, points_left, mastery_rate
 
