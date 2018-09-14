@@ -1,3 +1,4 @@
 *.pyc
 .vscode/
 temp*
+src/config/default.json
