@@ -62,7 +62,7 @@ class Opt_Craft_App(wx.Frame):
     def _create_item_sizer(self, parent):
         st1 = wx.StaticText(parent, -1, "Item: ", style = wx.ALIGN_CENTRE_HORIZONTAL)
         self.item_name_list = []
-        self.item_catagory = list(set([item_db[k]["category"] for k in item_db.keys()]))
+        self.item_catagory = sorted(list(set([item_db[k]["category"] for k in item_db.keys()])))
         self.item_cb1 = wx.Choice(parent, size = (100, -1), choices = list(self.item_catagory), name = "item_cb_1" )
         self.item_cb1.Bind(wx.EVT_CHOICE, self.OnChoice_item_cb1)
         self.item_cb2 = wx.Choice(parent, size = (200, -1), choices = list(self.item_name_list), name = "item_cb_2" )

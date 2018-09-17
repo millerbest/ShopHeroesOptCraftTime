@@ -226,7 +226,7 @@ class LargestGradientOptimizer():
         return g
     
     def _add_point_to_largest_gradient(self, gradients):
-        if self.worker.get_total_skill_points() > 0:
+        if self.worker.get_remaining_skill_points() > 0:
             if np.max(gradients) > 0:
                 if np.argmax(gradients) == 0:
                     self.worker.textile += 1
@@ -261,6 +261,7 @@ class Optimial_craft_time_calculator():
         self.item = item
         self.list_workers = self._load_workers(worker_name_level_list)
         self.total_investigated_skill_points = total_investigated_skill_points 
+    
     def _load_workers(self, worker_name_level_list):
         list_workers = []
         for worker_name_level in worker_name_level_list:
@@ -304,12 +305,11 @@ class Optimial_craft_time_calculator():
             #mastery_rate.append(self._get_mastery_rate(points_left[-1]))
             total_mastery = 0
             for worker in self.list_workers:
-                max_skill_point = worker.get_worker_params()._get_max_skill_points()
-                max_mastery_point = np.min([worker.get_total_skill_points(),
-                                           int((worker.get_total_skill_points()+max_skill_point)/2.)])
-                total_mastery += max_mastery_point
+                total_mastery += worker.get_available_mastery()
+                print (worker.get_available_mastery())
             mastery_rate.append(self._get_mastery_rate(total_mastery))
-
+        
+        
         return self.list_workers, time_craft, points_left, mastery_rate
 
 if __name__ == "__main__":
