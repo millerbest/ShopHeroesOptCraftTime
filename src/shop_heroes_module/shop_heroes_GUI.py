@@ -272,13 +272,13 @@ class Opt_Craft_App(wx.Frame):
         worker_params.arts_crafts = self._get_skill_value_from_cb(ctrl_10_name)
         ctrl_11_name = "tc_%s_%s" % (choice_id.split("_")[-1], 11)
         worker_params.rune = self._get_skill_value_from_cb(ctrl_11_name)
-
+        print (worker_params)
         return worker_params
 
     def _get_skill_value_from_cb(self, tc_name):
         tc = self._get_tc_by_name(tc_name)
         if tc.GetValue().isdigit():
-            return int(tc.GetValue().isdigit())
+            return int(tc.GetValue())
         else:
             return 0
 

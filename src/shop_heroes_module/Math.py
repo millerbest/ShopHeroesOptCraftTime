@@ -1,6 +1,9 @@
+import sys
+import os
 import numpy as np
 from scipy.optimize import minimize
 from scipy.optimize import least_squares
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 from shop_heroes_module.Worker import WorkerLoader
 from shop_heroes_module.Worker_params import Worker_params
 
@@ -256,6 +259,179 @@ class LargestGradientOptimizer():
         gradients = self._getGradients()
         self._add_point_to_largest_gradient(gradients)
 
+class LargestGlobalGradientOptimizer():
+    def __init__(self, item, worker_list):
+        self.item = item
+        self.worker_list = worker_list
+        self.updated_worker_list = []
+    
+    def _get_sum_worker_params(self, list_workers):
+        result_params = Worker_params()
+        for worker in list_workers:
+            result_params += worker.get_worker_params()
+        return result_params
+
+    def _getGradient(self, list_workers, t1):
+        craft_time_1 = t1
+        params = self._get_sum_worker_params(list_workers)
+        craft_time_2 = self.item.getCraftTime(params)
+        return (craft_time_1 - craft_time_2)
+
+    def _getGradients(self):
+        g = np.zeros([8, 11])
+        params = self._get_sum_worker_params(self.worker_list)
+        t1 = self.item.getCraftTime(params)
+
+        for worker_idx, worker in enumerate(self.worker_list):
+            new_worker_list = self.worker_list
+            g[worker_idx] = self._getGraidentOfOneWorker(new_worker_list, worker_idx, t1)
+        return g
+
+    def _getGraidentOfOneWorker(self, list_worker, idx_worker, t1):
+        current_worker = list_worker[idx_worker]
+        g = []
+        if current_worker.textile != -1:
+            list_worker[idx_worker].textile += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].textile -= 1
+        else:
+            g.append(-1)
+
+        if current_worker.armor != -1:
+            list_worker[idx_worker].armor += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].armor -= 1
+        else:
+            g.append(-1)
+
+        if current_worker.metal != -1:
+            list_worker[idx_worker].metal += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].metal -= 1
+        else:
+            g.append(-1)
+        if current_worker.weapon != -1:
+            list_worker[idx_worker].weapon += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].weapon -= 1
+        else:
+            g.append(-1)
+        if current_worker.wood != -1:
+            list_worker[idx_worker].wood += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].wood -= 1
+        else:
+            g.append(-1)
+        if current_worker.alchemy != -1:
+            list_worker[idx_worker].alchemy += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].alchemy -= 1
+        else:
+            g.append(-1)
+        if current_worker.magic != -1:
+            list_worker[idx_worker].magic += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].magic -= 1
+        else:
+            g.append(-1)
+        if current_worker.tinker != -1:
+            list_worker[idx_worker].tinker += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].tinker -= 1
+        else:
+            g.append(-1)
+        if current_worker.jewel != -1:
+            list_worker[idx_worker].jewel += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].jewel -= 1
+        else:
+            g.append(-1)
+        if current_worker.arts_crafts != -1:
+            list_worker[idx_worker].arts_crafts += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].arts_crafts -= 1
+        else:
+            g.append(-1)
+        if current_worker.rune != -1:
+            list_worker[idx_worker].rune += 1
+            g.append(self._getGradient(list_worker, t1))
+            list_worker[idx_worker].rune -= 1
+        else:
+            g.append(-1)
+        
+        return g
+
+    def _add_point_to_largest_gradient(self, gradients):
+        indices = np.where(gradients==gradients.max())
+        if indices[0].size > 1:
+            indice_for_adding = self._choose_from_indices(indices)
+        else:
+            indice_for_adding = indices
+        
+        if indice_for_adding[1] == 0:
+            self.worker_list[indice_for_adding[0]].textile += 1
+        elif indice_for_adding[1] == 1:
+            self.worker_list[indice_for_adding[0]].armor += 1
+        elif indice_for_adding[1] == 2:
+            self.worker_list[indice_for_adding[0]].metal += 1
+        elif indice_for_adding[1] == 3:
+            self.worker_list[indice_for_adding[0]].weapon += 1
+        elif indice_for_adding[1] == 4:
+            self.worker_list[indice_for_adding[0]].wood += 1
+        elif indice_for_adding[1] == 5:
+            self.worker_list[indice_for_adding[0]].alchemy += 1
+        elif indice_for_adding[1] == 6:
+            self.worker_list[indice_for_adding[0]].magic += 1
+        elif indice_for_adding[1] == 7:
+            self.worker_list[indice_for_adding[0]].tinker += 1
+        elif indice_for_adding[1] == 8:
+            self.worker_list[indice_for_adding[0]].jewel += 1
+        elif indice_for_adding[1] == 9:
+            self.worker_list[indice_for_adding[0]].arts_crafts += 1
+        elif indice_for_adding[1] == 10:
+            self.worker_list[indice_for_adding[0]].rune += 1
+        return
+
+    def _choose_from_indices(self, indices):
+        candidate = []
+        for idx in np.arange(0, indices[0].size):
+            candidate.append(self._get_worker_param_by_indice((indices[0][idx], indices[1][idx])))
+        return (indices[0][np.argmax(candidate)], indices[1][np.argmax(candidate)])
+
+
+    def _get_worker_param_by_indice(self, indice):
+        worker = self.worker_list[indice[0]]
+        return worker.get_remaining_skill_points()
+
+        # if indice[1] == 0:
+        #     return worker.textile
+        # elif indice[1] == 1:
+        #     return worker.armor
+        # elif indice[1] == 2:
+        #     return worker.metal
+        # elif indice[1] == 3:
+        #     return worker.weapon
+        # elif indice[1] == 4:
+        #     return worker.wood
+        # elif indice[1] == 5:
+        #     return worker.alchemy
+        # elif indice[1] == 6:
+        #     return worker.magic
+        # elif indice[1] == 7:
+        #     return worker.tinker
+        # elif indice[1] == 8:
+        #     return worker.jewel
+        # elif indice[1] == 9:
+        #     return worker.arts_crafts
+        # elif indice[1] == 10:
+        #     return worker.rune
+        # else:
+        #     return 
+        
+    def run(self):
+        gradients = self._getGradients()
+        self._add_point_to_largest_gradient(gradients)
+
 class Optimial_craft_time_calculator():
     def __init__(self, item, worker_name_level_list, total_investigated_skill_points):
         self.item = item
@@ -288,27 +464,38 @@ class Optimial_craft_time_calculator():
         points_left = []
         mastery_rate = []
         for i in range(0, self.total_investigated_skill_points): #50*12*8
-            current_worker = self.list_workers[i%len(self.list_workers)]
-            rest_worker_params = [w.get_worker_params() for idx,w in\
-                                     enumerate(self.list_workers) if idx != i%8]
-        
-            sum_w_param = Worker_params()
-            for w_param in rest_worker_params:
-                sum_w_param = sum_w_param + w_param
-            lgo = LargestGradientOptimizer(self.item, current_worker, sum_w_param)
-            lgo.run()
+            lggo = LargestGlobalGradientOptimizer(self.item, self.list_workers)
+            lggo.run()
+            self.list_workers = lggo.worker_list
 
-            self.list_workers[i%8] = lgo.worker
-            time_craft.append(self.item.getCraftTime(sum_w_param+lgo.worker.get_worker_params()))
-            #points_left.append(np.sum([w.get_total_skill_points() for w in self.list_workers]))
-            
-            #mastery_rate.append(self._get_mastery_rate(points_left[-1]))
+            sum_w_param = Worker_params()
+            for worker in self.list_workers:
+                sum_w_param += worker.get_worker_params() 
+            time_craft.append(self.item.getCraftTime(sum_w_param))
             total_mastery = 0
             for worker in self.list_workers:
                 total_mastery += worker.get_available_mastery()
-                print (worker.get_available_mastery())
             mastery_rate.append(self._get_mastery_rate(total_mastery))
+            
+            ## old method:
+            # current_worker = self.list_workers[i%len(self.list_workers)]
+            # rest_worker_params = [w.get_worker_params() for idx,w in\
+            #                          enumerate(self.list_workers) if idx != i%8]
         
+            # sum_w_param = Worker_params()
+            # for w_param in rest_worker_params:
+            #     sum_w_param = sum_w_param + w_param
+            # lgo = LargestGradientOptimizer(self.item, current_worker, sum_w_param)
+            # lgo.run()
+
+            # self.list_workers[i%8] = lgo.worker
+            # time_craft.append(self.item.getCraftTime(sum_w_param+lgo.worker.get_worker_params()))
+
+            # total_mastery = 0
+            # for worker in self.list_workers:
+            #     total_mastery += worker.get_available_mastery()
+            # mastery_rate.append(self._get_mastery_rate(total_mastery))
+
         
         return self.list_workers, time_craft, points_left, mastery_rate
 
@@ -331,7 +518,7 @@ if __name__ == "__main__":
 
     
     
-    octc = Optimial_craft_time_calculator(item, worker_name_level_list, 3000)
+    octc = Optimial_craft_time_calculator(item, worker_name_level_list, 1000)
     list_workers, time_craft, points_left, mastery_rate = octc.run()
 
     import matplotlib.pyplot as plt

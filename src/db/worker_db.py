@@ -132,8 +132,8 @@ worker_db = \
                      'tier': 4},
     'wizard': {   'name': 'Wizard',
                   'per-level': 10,
-                  'skill1': ('magic',15),
-                  'skill2': ('alchemy',20),
+                  'skill1': ('magic',20),
+                  'skill2': ('alchemy',15),
                   'skill3': ('rune-writing',25),
                   'mastery': 15,
                   'tier': 3}}

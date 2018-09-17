@@ -67,6 +67,7 @@ class Item():
                 self.jewel / param_worker.jewel +
                 self.arts_crafts / param_worker.arts_crafts +
                 self.rune / param_worker.rune)
+            
 
 class Item_params():
     def __init__(self, *args):
