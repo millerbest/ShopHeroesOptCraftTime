@@ -38,7 +38,7 @@ class Opt_Craft_App(wx.Frame):
         self.worker_sizer = wx.FlexGridSizer(cols=15, hgap=4, vgap=4)
         self._create_worker_sizer(self.panel)
 
-        self.item_sizer = wx.FlexGridSizer(cols=9, hgap = 6, vgap = 6)
+        self.item_sizer = wx.FlexGridSizer(cols=10, hgap = 6, vgap = 6)
         self._create_item_sizer(self.panel)
         
         self.result_sizer = wx.FlexGridSizer(cols=3, hgap=8, vgap = 6)
@@ -66,8 +66,10 @@ class Opt_Craft_App(wx.Frame):
         self.item_cb1 = wx.Choice(parent, size = (100, -1), choices = list(self.item_catagory), name = "item_cb_1" )
         self.item_cb1.Bind(wx.EVT_CHOICE, self.OnChoice_item_cb1)
         self.item_cb2 = wx.Choice(parent, size = (200, -1), choices = list(self.item_name_list), name = "item_cb_2" )
-        self.button_run = wx.Button(parent, label = "Run", size = (100, -1))
+        self.button_run = wx.Button(parent, label = "Run", size = (50, -1))
         self.button_run.Bind(wx.EVT_BUTTON, self.OnButtonRun)
+        self.button_forward = wx.Button(parent, label = "Forward calc", size = (100, -1))
+        self.button_forward.Bind(wx.EVT_BUTTON, self.OnButtonForward)
         self.item_cb2.Bind(wx.EVT_CHOICE, self.OnChoice_item_cb2)
         st2 = wx.StaticText(parent, -1, "Total skill points: ", style = wx.ALIGN_CENTRE_HORIZONTAL)
         self.tc_total_points = wx.TextCtrl(parent, -1, size = (80, -1))
@@ -77,8 +79,9 @@ class Opt_Craft_App(wx.Frame):
                                  wx.StaticText(parent, -1, "", size=(50,20)),
                                  st2,
                                  self.tc_total_points,
-                                 wx.StaticText(parent, -1, "", size=(50,20)),
-                                 self.button_run])
+                                 wx.StaticText(parent, -1, "", size=(20,20)),
+                                 self.button_run,
+                                 self.button_forward])
         
         return
 
@@ -243,7 +246,42 @@ class Opt_Craft_App(wx.Frame):
                 control.Enable(False)
 
         return 
-        
+
+    def _get_worker_params_from_gui(self, choice_id):
+        worker_params = Worker_params()
+
+        ctrl_1_name = "tc_%s_%s" % (choice_id.split("_")[-1], 1)
+        worker_params.textile = self._get_skill_value_from_cb(ctrl_1_name)
+        ctrl_2_name = "tc_%s_%s" % (choice_id.split("_")[-1], 2)
+        worker_params.armor = self._get_skill_value_from_cb(ctrl_2_name)
+        ctrl_3_name = "tc_%s_%s" % (choice_id.split("_")[-1], 3)
+        worker_params.metal = self._get_skill_value_from_cb(ctrl_3_name)
+        ctrl_4_name = "tc_%s_%s" % (choice_id.split("_")[-1], 4)
+        worker_params.weapon = self._get_skill_value_from_cb(ctrl_4_name)
+        ctrl_5_name = "tc_%s_%s" % (choice_id.split("_")[-1], 5)
+        worker_params.wood = self._get_skill_value_from_cb(ctrl_5_name)
+        ctrl_6_name = "tc_%s_%s" % (choice_id.split("_")[-1], 6)
+        worker_params.alchemy = self._get_skill_value_from_cb(ctrl_6_name)
+        ctrl_7_name = "tc_%s_%s" % (choice_id.split("_")[-1], 7)
+        worker_params.magic = self._get_skill_value_from_cb(ctrl_7_name)
+        ctrl_8_name = "tc_%s_%s" % (choice_id.split("_")[-1], 8)
+        worker_params.tinker = self._get_skill_value_from_cb(ctrl_8_name)
+        ctrl_9_name = "tc_%s_%s" % (choice_id.split("_")[-1], 9)
+        worker_params.jewel = self._get_skill_value_from_cb(ctrl_9_name)
+        ctrl_10_name = "tc_%s_%s" % (choice_id.split("_")[-1], 10)
+        worker_params.arts_crafts = self._get_skill_value_from_cb(ctrl_10_name)
+        ctrl_11_name = "tc_%s_%s" % (choice_id.split("_")[-1], 11)
+        worker_params.rune = self._get_skill_value_from_cb(ctrl_11_name)
+
+        return worker_params
+
+    def _get_skill_value_from_cb(self, tc_name):
+        tc = self._get_tc_by_name(tc_name)
+        if tc.GetValue().isdigit():
+            return int(tc.GetValue().isdigit())
+        else:
+            return 0
+
     def OnChoice_item_cb1(self, event):
         current_choice = event.GetEventObject()
         category = current_choice.GetString(current_choice.GetSelection())
@@ -301,6 +339,21 @@ class Opt_Craft_App(wx.Frame):
         ax2.set_ylabel("Percentage [%]")
         plt.grid()
         plt.show()
+
+    def OnButtonForward(self, event):
+        item_name = self.item_internal_name
+        il = ItemLoader(item_name)
+        item = il.get_item()
+
+        worker_params = Worker_params()
+        for i in range(0, 8): 
+            worker_params += self._get_worker_params_from_gui("cb_%s" % (i))
+        
+        craft_time = item.getCraftTime(worker_params)
+        mastery_rate = [0] * 5
+        self._update_results(craft_time, mastery_rate)
+        return
+
     def _update_results(self, craft_time, mastery_rate):
         st1 = self._get_st_by_name("tc_result_1")
         st2 = self._get_st_by_name("tc_result_2")
@@ -327,7 +380,6 @@ class Opt_Craft_App(wx.Frame):
             return
         except:
             return
-
 
     def _get_worker_name_level_list(self):
         result = []
