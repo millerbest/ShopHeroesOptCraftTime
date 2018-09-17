@@ -47,7 +47,7 @@ worker_db = \
                     'skill2': ('arts-and-crafts',10),
                     'tier': 2},
     'jack-of-all-trades': {   'name': 'Fletcher',
-                    'per-level': 12,
+                    'per-level': 15,
                     'skill1': ('textile-working',1),
                     'skill2': ('armor-crafting',1),
                     'skill3': ('metal-working',1),
