@@ -358,22 +358,17 @@ class LargestGlobalGradientOptimizer():
             list_worker[idx_worker].rune -= 1
         else:
             g.append(-1)
-        
         return g
 
     def _add_point_to_largest_gradient(self, gradients):
         indice_for_adding = None
         while indice_for_adding is None and np.max(gradients) > 0:
             indices = np.where(gradients==gradients.max())
-            if indices[0].size > 1:
-                indice_for_adding = self._choose_from_indices(indices)
-            else:
-                indice_for_adding = indices
-            
+            #if indices[0].size > 1:
+            indice_for_adding = self._choose_from_indices(indices)
             if indice_for_adding is None:
                 for i in range(0, indices[0].size):
                     gradients[indices[0][i]][indices[1][i]] = 0
-
 
         if indice_for_adding is not None:
             if indice_for_adding[1] == 0:
@@ -516,7 +511,7 @@ if __name__ == "__main__":
     from Worker import Worker, WorkerLoader
     from Item import Item, ItemLoader
     
-    il = ItemLoader("fangtian-pike")
+    il = ItemLoader("gfg")
     item = il.get_item()
 
     worker_name_level_list = [("master",35),
