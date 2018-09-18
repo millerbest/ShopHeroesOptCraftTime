@@ -11,10 +11,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 from shop_heroes_module.Worker_params import Worker_params
 from shop_heroes_module.Worker import Worker, WorkerLoader
 from shop_heroes_module.Item import Item, ItemLoader
-from shop_heroes_module.Math import Optimial_craft_time_calculator
+from shop_heroes_module.Math import Optimial_craft_time_calculator, Optimal_next_skill_point_calculator
 import numpy as np
 import matplotlib.pyplot as plt
 import json
+
 
 class Opt_Craft_App(wx.Frame):
     def __init__(self, parent, title, version): 
@@ -240,11 +241,13 @@ class Opt_Craft_App(wx.Frame):
             control = self._get_tc_by_name(ctrl_name)
             if param != -1:
                 control.Enable(True)
+                control.SetBackgroundColour(wx.NullColour)
                 control.SetValue(str(param))
             else:
                 control.SetValue("")
+                control.SetBackgroundColour(wx.NullColour)
                 control.Enable(False)
-
+                
         return 
 
     def _get_worker_params_from_gui(self, choice_id):
@@ -272,7 +275,6 @@ class Opt_Craft_App(wx.Frame):
         worker_params.arts_crafts = self._get_skill_value_from_cb(ctrl_10_name)
         ctrl_11_name = "tc_%s_%s" % (choice_id.split("_")[-1], 11)
         worker_params.rune = self._get_skill_value_from_cb(ctrl_11_name)
-        print (worker_params)
         return worker_params
 
     def _get_skill_value_from_cb(self, tc_name):
@@ -341,14 +343,29 @@ class Opt_Craft_App(wx.Frame):
         plt.show()
 
     def OnButtonForward(self, event):
+        self._reset_all_tc_background_color()
         item_name = self.item_internal_name
         il = ItemLoader(item_name)
         item = il.get_item()
 
-        worker_params = Worker_params()
-        for i in range(0, 8): 
-            worker_params += self._get_worker_params_from_gui("cb_%s" % (i))
+        worker_name_level_list = self._get_worker_name_level_list()
         
+        list_worker_params = []
+        worker_params = Worker_params()
+        for i in range(0, 8):
+            wp = self._get_worker_params_from_gui("cb_%s" % (i))
+            list_worker_params.append(wp)
+            worker_params += wp
+
+        onspc = Optimal_next_skill_point_calculator(item, worker_name_level_list, list_worker_params)
+        next_indice = onspc.run()
+        if next_indice is not None:
+            tc_to_add = self._get_tc_by_name("tc_%s_%s" % (next_indice[0], next_indice[1]+1)) 
+            tc_to_add.SetBackgroundColour((114, 233, 177))
+            tc_to_add.Refresh()
+        else:
+            wx.MessageBox("Already used all points", "Message" ,wx.OK | wx.ICON_INFORMATION)  
+
         craft_time = item.getCraftTime(worker_params)
         mastery_rate = [0] * 5
         self._update_results(craft_time, mastery_rate)
@@ -406,6 +423,12 @@ class Opt_Craft_App(wx.Frame):
         cmd.SetId(control.GetId())
         control.GetEventHandler().ProcessEvent(cmd)
         return
+
+    def _reset_all_tc_background_color(self):
+        txtCtrls = [widget for widget in self.panel.GetChildren() if isinstance(widget, wx.TextCtrl)]
+        for ctrl in txtCtrls:
+            ctrl.SetBackgroundColour(wx.NullColour)
+        return 
 
 if __name__ == "__main__":
     app = wx.App(False)

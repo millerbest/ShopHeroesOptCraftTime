@@ -361,14 +361,14 @@ class LargestGlobalGradientOptimizer():
         return g
 
     def _add_point_to_largest_gradient(self, gradients):
-        indice_for_adding = None
-        while indice_for_adding is None and np.max(gradients) > 0:
-            indices = np.where(gradients==gradients.max())
-            #if indices[0].size > 1:
-            indice_for_adding = self._choose_from_indices(indices)
-            if indice_for_adding is None:
-                for i in range(0, indices[0].size):
-                    gradients[indices[0][i]][indices[1][i]] = 0
+        indice_for_adding = self._get_next_indices_to_add(gradients)
+        # while indice_for_adding is None and np.max(gradients) > 0:
+        #     indices = np.where(gradients==gradients.max())
+        #     #if indices[0].size > 1:
+        #     indice_for_adding = self._choose_from_indices(indices)
+        #     if indice_for_adding is None:
+        #         for i in range(0, indices[0].size):
+        #             gradients[indices[0][i]][indices[1][i]] = 0
 
         if indice_for_adding is not None:
             if indice_for_adding[1] == 0:
@@ -434,10 +434,51 @@ class LargestGlobalGradientOptimizer():
         #     return worker.rune
         # else:
         #     return 
-        
+    
+    def _get_next_indices_to_add(self, gradients):
+        indice_for_adding = None
+        while indice_for_adding is None and np.max(gradients) > 0:
+            indices = np.where(gradients==gradients.max())
+            #if indices[0].size > 1:
+            indice_for_adding = self._choose_from_indices(indices)
+            if indice_for_adding is None:
+                for i in range(0, indices[0].size):
+                    gradients[indices[0][i]][indices[1][i]] = 0
+        return indice_for_adding
+
+    def get_next_indices(self):
+        gradients = self._getGradients()
+        return self._get_next_indices_to_add(gradients)
+
     def run(self):
         gradients = self._getGradients()
         self._add_point_to_largest_gradient(gradients)
+
+class Optimal_next_skill_point_calculator():
+    def __init__(self, item, worker_name_level_list, list_worker_params):
+        self.item = item
+        self.list_workers = self._load_workers(worker_name_level_list, list_worker_params)
+        
+    def _load_workers(self, worker_name_level_list, list_worker_params):
+        list_workers = []
+        for idx, worker_name_level in enumerate(worker_name_level_list):
+            worker_loader = WorkerLoader(worker_name_level[0], worker_name_level[1])
+            worker = worker_loader.get_worker()
+            worker.set_worker_params(list_worker_params[idx])
+            list_workers.append(worker)
+        return list_workers
+
+    def run(self):
+        time_craft = []
+        points_left = []
+        mastery_rate = []
+        
+        lggo = LargestGlobalGradientOptimizer(self.item, self.list_workers)
+        next_indice = lggo.get_next_indices()
+
+        return next_indice
+        #return self.list_workers, time_craft, points_left, mastery_rate
+
 
 class Optimial_craft_time_calculator():
     def __init__(self, item, worker_name_level_list, total_investigated_skill_points):
@@ -505,6 +546,7 @@ class Optimial_craft_time_calculator():
 
         
         return self.list_workers, time_craft, points_left, mastery_rate
+
 
 if __name__ == "__main__":
     from Worker_params import Worker_params

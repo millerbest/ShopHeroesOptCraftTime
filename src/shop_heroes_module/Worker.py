@@ -102,6 +102,32 @@ class Worker():
                                 "mastery":self.mastery})
         return result
 
+    def set_worker_params(self, params):
+        if self.textile >= 0:
+            self.textile = params.textile
+        if self.armor >= 0:
+            self.armor = params.armor
+        if self.metal >= 0:
+            self.metal = params.metal
+        if self.weapon >= 0:
+            self.weapon = params.weapon
+        if self.wood >= 0:
+            self.wood = params.wood
+        if self.alchemy >= 0:
+            self.alchemy = params.alchemy
+        if self.magic >= 0:
+            self.magic = params.magic
+        if self.tinker >= 0:
+            self.tinker = params.tinker
+        if self.jewel >= 0:
+            self.jewel = params.jewel
+        if self.arts_crafts >= 0:
+            self.arts_crafts = params.arts_crafts
+        if self.rune >= 0:
+            self.rune = params.rune
+        return
+
+
     def get_available_mastery(self):
         max_skill_point = self.get_worker_params()._get_max_skill_points()
         remaining_skill_point = self.get_remaining_skill_points()
