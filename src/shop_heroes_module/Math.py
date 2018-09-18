@@ -362,41 +362,53 @@ class LargestGlobalGradientOptimizer():
         return g
 
     def _add_point_to_largest_gradient(self, gradients):
-        indices = np.where(gradients==gradients.max())
-        if indices[0].size > 1:
-            indice_for_adding = self._choose_from_indices(indices)
-        else:
-            indice_for_adding = indices
-        
-        if indice_for_adding[1] == 0:
-            self.worker_list[indice_for_adding[0]].textile += 1
-        elif indice_for_adding[1] == 1:
-            self.worker_list[indice_for_adding[0]].armor += 1
-        elif indice_for_adding[1] == 2:
-            self.worker_list[indice_for_adding[0]].metal += 1
-        elif indice_for_adding[1] == 3:
-            self.worker_list[indice_for_adding[0]].weapon += 1
-        elif indice_for_adding[1] == 4:
-            self.worker_list[indice_for_adding[0]].wood += 1
-        elif indice_for_adding[1] == 5:
-            self.worker_list[indice_for_adding[0]].alchemy += 1
-        elif indice_for_adding[1] == 6:
-            self.worker_list[indice_for_adding[0]].magic += 1
-        elif indice_for_adding[1] == 7:
-            self.worker_list[indice_for_adding[0]].tinker += 1
-        elif indice_for_adding[1] == 8:
-            self.worker_list[indice_for_adding[0]].jewel += 1
-        elif indice_for_adding[1] == 9:
-            self.worker_list[indice_for_adding[0]].arts_crafts += 1
-        elif indice_for_adding[1] == 10:
-            self.worker_list[indice_for_adding[0]].rune += 1
+        indice_for_adding = None
+        while indice_for_adding is None and np.max(gradients) > 0:
+            indices = np.where(gradients==gradients.max())
+            if indices[0].size > 1:
+                indice_for_adding = self._choose_from_indices(indices)
+            else:
+                indice_for_adding = indices
+            
+            if indice_for_adding is None:
+                for i in range(0, indices[0].size):
+                    gradients[indices[0][i]][indices[1][i]] = 0
+
+
+        if indice_for_adding is not None:
+            if indice_for_adding[1] == 0:
+                self.worker_list[indice_for_adding[0]].textile += 1
+            elif indice_for_adding[1] == 1:
+                self.worker_list[indice_for_adding[0]].armor += 1
+            elif indice_for_adding[1] == 2:
+                self.worker_list[indice_for_adding[0]].metal += 1
+            elif indice_for_adding[1] == 3:
+                self.worker_list[indice_for_adding[0]].weapon += 1
+            elif indice_for_adding[1] == 4:
+                self.worker_list[indice_for_adding[0]].wood += 1
+            elif indice_for_adding[1] == 5:
+                self.worker_list[indice_for_adding[0]].alchemy += 1
+            elif indice_for_adding[1] == 6:
+                self.worker_list[indice_for_adding[0]].magic += 1
+            elif indice_for_adding[1] == 7:
+                self.worker_list[indice_for_adding[0]].tinker += 1
+            elif indice_for_adding[1] == 8:
+                self.worker_list[indice_for_adding[0]].jewel += 1
+            elif indice_for_adding[1] == 9:
+                self.worker_list[indice_for_adding[0]].arts_crafts += 1
+            elif indice_for_adding[1] == 10:
+                self.worker_list[indice_for_adding[0]].rune += 1
         return
 
     def _choose_from_indices(self, indices):
         candidate = []
         for idx in np.arange(0, indices[0].size):
             candidate.append(self._get_worker_param_by_indice((indices[0][idx], indices[1][idx])))
-        return (indices[0][np.argmax(candidate)], indices[1][np.argmax(candidate)])
+        
+        if np.max(candidate) <= 0:
+            return 
+        else:        
+            return (indices[0][np.argmax(candidate)], indices[1][np.argmax(candidate)])
 
 
     def _get_worker_param_by_indice(self, indice):
@@ -476,7 +488,7 @@ class Optimial_craft_time_calculator():
             for worker in self.list_workers:
                 total_mastery += worker.get_available_mastery()
             mastery_rate.append(self._get_mastery_rate(total_mastery))
-            
+
             ## old method:
             # current_worker = self.list_workers[i%len(self.list_workers)]
             # rest_worker_params = [w.get_worker_params() for idx,w in\
