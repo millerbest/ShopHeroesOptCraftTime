@@ -54,6 +54,21 @@ class Worker_params():
         else: 
             return value
 
+    def set_null(self):
+        self.textile = -1
+        self.armor = -1
+        self.metal = -1
+        self.weapon = -1
+        self.wood = -1
+        self.alchemy = -1
+        self.magic = -1
+        self.tinker = -1
+        self.jewel = -1
+        self.arts_crafts = -1
+        self.rune = -1
+        self.mastery = -1
+        return 
+        
     def __add__(self, other):
         result = Worker_params()
         result.textile = self._minus_filter(self.textile) + self._minus_filter(other.textile)

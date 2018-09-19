@@ -136,8 +136,10 @@ class Opt_Craft_App(wx.Frame):
         align_style = wx.ALIGN_CENTRE_HORIZONTAL
         st = wx.StaticText(parent, -1, str(idx_row+1), size=(20,20), style = align_style)
         cb = wx.Choice(parent, size = (100, -1), choices = list(self.worker_list), name = "cb_%s" % (idx_row))
-        
-        tc0 = wx.TextCtrl(parent, -1, str(self.config["hero%s" % (idx_row+1)]["level"]), size=(width_tc, -1), name = "tc_%s_0" % (idx_row))
+        try:
+            tc0 = wx.TextCtrl(parent, -1, str(self.config["hero%s" % (idx_row+1)]["level"]), size=(width_tc, -1), name = "tc_%s_0" % (idx_row))
+        except KeyError:
+            tc0 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_0" % (idx_row))
         tc1 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_1" % (idx_row))
         tc2 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_2" % (idx_row))
         tc3 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_%s_3" % (idx_row))
@@ -153,7 +155,10 @@ class Opt_Craft_App(wx.Frame):
                     st, cb, tc0, tc1, tc2, tc3, tc4, tc5, tc6, tc7, tc8, tc9, tc10, tc11])
         
         cb.Bind(wx.EVT_CHOICE, self.OnChoice)
-        cb.SetStringSelection(self.config["hero%s" % (idx_row+1)]["name"]) 
+        try:
+            cb.SetStringSelection(self.config["hero%s" % (idx_row+1)]["name"]) 
+        except KeyError:
+            cb.SetStringSelection("") 
         self._send_event(wx.EVT_CHOICE, cb)
         return 
     
@@ -181,22 +186,21 @@ class Opt_Craft_App(wx.Frame):
 
     def _get_list_of_workers(self):
         dict_workers = worker_db
-        return dict_workers.keys()
-
-    def _create_item_tbox(self, sizer, idx_row):
-        pass
-
-    def _create_buttons(self, parent):
-        pass
+        return list(dict_workers.keys())
     
     def OnChoice(self, event):
         current_choice = event.GetEventObject()
         current_worker_name = current_choice.GetString(current_choice.GetSelection())
-       # worker_data = worker_db[current_worker_name]
-        wl = WorkerLoader(current_worker_name)
-        worker_params = wl.get_worker().get_worker_params()
-        choice_id = current_choice.Name
-        self._set_worker_values(worker_params, choice_id)
+        if current_worker_name != "":
+            wl = WorkerLoader(current_worker_name)
+            worker_params = wl.get_worker().get_worker_params()
+            choice_id = current_choice.Name
+            self._set_worker_values(worker_params, choice_id)
+        else:
+            worker_params = Worker_params()
+            choice_id = current_choice.Name
+            worker_params.set_null()
+            self._set_worker_values(worker_params, choice_id)
         return 
 
     def _get_tc_by_name(self, name):
@@ -224,7 +228,7 @@ class Opt_Craft_App(wx.Frame):
         return result
 
     def _set_worker_values(self, worker_params, choice_id):       
-        for idx, param in enumerate([worker_params.textile,
+        list_skills =  [worker_params.textile,
                                     worker_params.armor,
                                     worker_params.metal,
                                     worker_params.weapon,
@@ -234,7 +238,17 @@ class Opt_Craft_App(wx.Frame):
                                     worker_params.tinker,
                                     worker_params.jewel,
                                     worker_params.arts_crafts,
-                                    worker_params.rune]):
+                        worker_params.rune]
+
+        level_ctrl = self._get_tc_by_name("tc_%s_%s" % (choice_id.split("_")[-1], 0))
+        if len(set(list_skills)) == 1 and list_skills[0]==-1:
+            level_ctrl.SetValue("")
+            level_ctrl.Enable(False)
+        else:
+            level_ctrl.SetBackgroundColour(wx.NullColour)
+            level_ctrl.Enable(True)
+            
+        for idx, param in enumerate(list_skills):
             ctrl_name = "tc_%s_%s" % (choice_id.split("_")[-1], idx+1)
             control = self._get_tc_by_name(ctrl_name)
             if param != -1:
@@ -301,7 +315,6 @@ class Opt_Craft_App(wx.Frame):
     def OnButtonRun(self, event):
         item_name = self.item_internal_name  
         worker_name_level_list = self._get_worker_name_level_list()
-
         if self.tc_total_points.GetValue().isdigit():
             total_skill_points = int(self.tc_total_points.GetValue())
         else:
@@ -401,8 +414,10 @@ class Opt_Craft_App(wx.Frame):
             tc_level = self._get_tc_by_name("tc_%s_0" % (i))
             worker_name = cb_worker_name.GetString(cb_worker_name.GetSelection())
             level = tc_level.GetValue()
-            if worker_name != "" and level.isdigit():
+            if level.isdigit():
                 result.append((worker_name, int(level)))
+            else:
+                result.append((worker_name, 0))
         return result
 
     def _set_tab_order(self):

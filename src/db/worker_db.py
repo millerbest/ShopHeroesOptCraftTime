@@ -136,4 +136,7 @@ worker_db = \
                   'skill2': ('alchemy',15),
                   'skill3': ('rune-writing',25),
                   'mastery': 15,
-                  'tier': 3}}
+                  'tier': 3},
+
+     '':      {   'name': '',
+                  'per-level': 0,}}

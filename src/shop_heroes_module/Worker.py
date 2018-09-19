@@ -163,7 +163,7 @@ class Worker():
                                     self.mastery)
 
 class WorkerLoader():
-    def __init__(self, worker_name, level=30):
+    def __init__(self, worker_name, level=0):
         self.db = worker_db
         self.worker_data = self.db[worker_name]
         self.worker_params = self._get_worker_parameters()
