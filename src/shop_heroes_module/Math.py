@@ -409,31 +409,6 @@ class LargestGlobalGradientOptimizer():
     def _get_worker_param_by_indice(self, indice):
         worker = self.worker_list[indice[0]]
         return worker.get_remaining_skill_points()
-
-        # if indice[1] == 0:
-        #     return worker.textile
-        # elif indice[1] == 1:
-        #     return worker.armor
-        # elif indice[1] == 2:
-        #     return worker.metal
-        # elif indice[1] == 3:
-        #     return worker.weapon
-        # elif indice[1] == 4:
-        #     return worker.wood
-        # elif indice[1] == 5:
-        #     return worker.alchemy
-        # elif indice[1] == 6:
-        #     return worker.magic
-        # elif indice[1] == 7:
-        #     return worker.tinker
-        # elif indice[1] == 8:
-        #     return worker.jewel
-        # elif indice[1] == 9:
-        #     return worker.arts_crafts
-        # elif indice[1] == 10:
-        #     return worker.rune
-        # else:
-        #     return 
     
     def _get_next_indices_to_add(self, gradients):
         indice_for_adding = None
@@ -468,16 +443,39 @@ class Optimal_next_skill_point_calculator():
             list_workers.append(worker)
         return list_workers
 
+    def _get_mastery_rate(self, point):
+        green_rate = 2.5+0.025*point
+        blue_rate = 1 + 0.0125*point
+        flawless_rate =  0.25 + 0.005*point
+        epic_rate = 0.01 + 0.0005*point
+        legendary_rate = 0.001 + 0.00005*point
+        
+        return (green_rate, 
+                blue_rate,
+                flawless_rate,
+                epic_rate,
+                legendary_rate)
+    
+
+
     def run(self):
-        time_craft = []
-        points_left = []
-        mastery_rate = []
+        time_craft = None
+        mastery_rate = None
         
         lggo = LargestGlobalGradientOptimizer(self.item, self.list_workers)
         next_indice = lggo.get_next_indices()
 
-        return next_indice
-        #return self.list_workers, time_craft, points_left, mastery_rate
+        sum_w_param = Worker_params()
+        for worker in self.list_workers:
+            sum_w_param += worker.get_worker_params() 
+        time_craft = self.item.getCraftTime(sum_w_param)
+        total_mastery = 0
+        for worker in self.list_workers:
+            total_mastery += worker.get_available_mastery()
+        mastery_rate = self._get_mastery_rate(total_mastery)
+
+        return next_indice, time_craft, mastery_rate
+        
 
 
 class Optimial_craft_time_calculator():

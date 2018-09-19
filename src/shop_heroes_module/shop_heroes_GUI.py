@@ -356,7 +356,7 @@ class Opt_Craft_App(wx.Frame):
             worker_params += wp
 
         onspc = Optimal_next_skill_point_calculator(item, worker_name_level_list, list_worker_params)
-        next_indice = onspc.run()
+        next_indice, craft_time, mastery_rate = onspc.run()
         if next_indice is not None:
             tc_to_add = self._get_tc_by_name("tc_%s_%s" % (next_indice[0], next_indice[1]+1)) 
             tc_to_add.SetBackgroundColour((114, 233, 177))
@@ -364,8 +364,6 @@ class Opt_Craft_App(wx.Frame):
         else:
             wx.MessageBox("Already used all points", "Message" ,wx.OK | wx.ICON_INFORMATION)  
 
-        craft_time = item.getCraftTime(worker_params)
-        mastery_rate = [0] * 5
         self._update_results(craft_time, mastery_rate)
         return
 
@@ -426,6 +424,7 @@ class Opt_Craft_App(wx.Frame):
         txtCtrls = [widget for widget in self.panel.GetChildren() if isinstance(widget, wx.TextCtrl)]
         for ctrl in txtCtrls:
             ctrl.SetBackgroundColour(wx.NullColour)
+            ctrl.Refresh()
         return 
 
 if __name__ == "__main__":
