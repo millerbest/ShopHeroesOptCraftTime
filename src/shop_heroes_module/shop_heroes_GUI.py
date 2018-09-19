@@ -4,8 +4,6 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "db"))
 from worker_db import worker_db
 from item_db import item_db
-from Worker import WorkerLoader as WorkerLoader
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from shop_heroes_module.Worker_params import Worker_params
