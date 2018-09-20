@@ -6,6 +6,7 @@ from scipy.optimize import least_squares
 sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 from shop_heroes_module.Worker import WorkerLoader
 from shop_heroes_module.Worker_params import Worker_params
+from shop_heroes_module.City_buffer import City_buffer
 
 class SkillOptimizer():
     def __init__(self, item, list_workers):
@@ -260,15 +261,19 @@ class LargestGradientOptimizer():
         self._add_point_to_largest_gradient(gradients)
 
 class LargestGlobalGradientOptimizer():
-    def __init__(self, item, worker_list):
+    def __init__(self, item, worker_list, city_buffer):
         self.item = item
         self.worker_list = worker_list
         self.updated_worker_list = []
-    
+        self.city_buffer = city_buffer
+        self.skill_cap = 1000
+
     def _get_sum_worker_params(self, list_workers):
         result_params = Worker_params()
         for worker in list_workers:
             result_params += worker.get_worker_params()
+        result_params += self.city_buffer
+        result_params.apply_cap(self.skill_cap)
         return result_params
 
     def _getGradient(self, list_workers, t1):
@@ -362,14 +367,6 @@ class LargestGlobalGradientOptimizer():
 
     def _add_point_to_largest_gradient(self, gradients):
         indice_for_adding = self._get_next_indices_to_add(gradients)
-        # while indice_for_adding is None and np.max(gradients) > 0:
-        #     indices = np.where(gradients==gradients.max())
-        #     #if indices[0].size > 1:
-        #     indice_for_adding = self._choose_from_indices(indices)
-        #     if indice_for_adding is None:
-        #         for i in range(0, indices[0].size):
-        #             gradients[indices[0][i]][indices[1][i]] = 0
-
         if indice_for_adding is not None:
             if indice_for_adding[1] == 0:
                 self.worker_list[indice_for_adding[0]].textile += 1
@@ -430,10 +427,16 @@ class LargestGlobalGradientOptimizer():
         self._add_point_to_largest_gradient(gradients)
 
 class Optimal_next_skill_point_calculator():
-    def __init__(self, item, worker_name_level_list, list_worker_params):
+    def __init__(self, item, worker_name_level_list, list_worker_params,
+                 city_buffer=None):
         self.item = item
-        self.list_workers = self._load_workers(worker_name_level_list, list_worker_params)
-        
+        self.list_workers = self._load_workers(worker_name_level_list,
+                                               list_worker_params)
+        if city_buffer is None:
+            self.city_buffer = City_buffer()
+        else:
+            self.city_buffer = city_buffer
+
     def _load_workers(self, worker_name_level_list, list_worker_params):
         list_workers = []
         for idx, worker_name_level in enumerate(worker_name_level_list):
@@ -455,20 +458,18 @@ class Optimal_next_skill_point_calculator():
                 flawless_rate,
                 epic_rate,
                 legendary_rate)
-    
-
 
     def run(self):
         time_craft = None
         mastery_rate = None
         
-        lggo = LargestGlobalGradientOptimizer(self.item, self.list_workers)
+        lggo = LargestGlobalGradientOptimizer(self.item, self.list_workers, self.city_buffer)
         next_indice = lggo.get_next_indices()
 
         sum_w_param = Worker_params()
         for worker in self.list_workers:
             sum_w_param += worker.get_worker_params() 
-        time_craft = self.item.getCraftTime(sum_w_param)
+        time_craft = self.item.getCraftTime(sum_w_param+self.city_buffer)
         total_mastery = 0
         for worker in self.list_workers:
             total_mastery += worker.get_available_mastery()
@@ -479,11 +480,18 @@ class Optimal_next_skill_point_calculator():
 
 
 class Optimial_craft_time_calculator():
-    def __init__(self, item, worker_name_level_list, total_investigated_skill_points):
+    def __init__(self, item, worker_name_level_list,
+                 total_investigated_skill_points,
+                 city_buffer=None):
+
         self.item = item
         self.list_workers = self._load_workers(worker_name_level_list)
         self.total_investigated_skill_points = total_investigated_skill_points 
-    
+        if city_buffer is None:
+            self.city_buffer = City_buffer()
+        else:
+            self.city_buffer = city_buffer
+
     def _load_workers(self, worker_name_level_list):
         list_workers = []
         for worker_name_level in worker_name_level_list:
@@ -510,14 +518,15 @@ class Optimial_craft_time_calculator():
         points_left = []
         mastery_rate = []
         for i in range(0, self.total_investigated_skill_points): #50*12*8
-            lggo = LargestGlobalGradientOptimizer(self.item, self.list_workers)
+            lggo = LargestGlobalGradientOptimizer(self.item, self.list_workers,\
+                                                                self.city_buffer)
             lggo.run()
             self.list_workers = lggo.worker_list
 
             sum_w_param = Worker_params()
             for worker in self.list_workers:
                 sum_w_param += worker.get_worker_params() 
-            time_craft.append(self.item.getCraftTime(sum_w_param))
+            time_craft.append(self.item.getCraftTime(sum_w_param+self.city_buffer))
             total_mastery = 0
             for worker in self.list_workers:
                 total_mastery += worker.get_available_mastery()

@@ -7,6 +7,7 @@ from item_db import item_db
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
 
 from shop_heroes_module.Worker_params import Worker_params
+from shop_heroes_module.City_buffer import City_buffer
 from shop_heroes_module.Worker import Worker, WorkerLoader
 from shop_heroes_module.Item import Item, ItemLoader
 from shop_heroes_module.Math import Optimial_craft_time_calculator, Optimal_next_skill_point_calculator
@@ -33,9 +34,12 @@ class Opt_Craft_App(wx.Frame):
         self.worker_list = self._get_list_of_workers()
 
         self.panel = wx.Panel(self, -1)
-        main_sizer = wx.GridBagSizer(3, 1)
+        main_sizer = wx.GridBagSizer(4, 1)
         self.worker_sizer = wx.FlexGridSizer(cols=15, hgap=4, vgap=4)
         self._create_worker_sizer(self.panel)
+
+        self.city_buffer_sizer = wx.FlexGridSizer(cols=13, hgap=4, vgap=4)
+        self._create_city_buffer_sizer(self.panel)
 
         self.item_sizer = wx.FlexGridSizer(cols=10, hgap = 6, vgap = 6)
         self._create_item_sizer(self.panel)
@@ -45,9 +49,11 @@ class Opt_Craft_App(wx.Frame):
 
         main_sizer.Add(self.worker_sizer, pos=(0, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
                        border=5)
-        main_sizer.Add(self.item_sizer, pos=(1, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
+        main_sizer.Add(self.city_buffer_sizer, pos=(1, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
                        border=5)
-        main_sizer.Add(self.result_sizer, pos=(2, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
+        main_sizer.Add(self.item_sizer, pos=(2, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
+                       border=5)
+        main_sizer.Add(self.result_sizer, pos=(3, 0), flag=wx.TOP|wx.LEFT|wx.BOTTOM,
                        border=30)
         self.panel.SetSizer(main_sizer)
 
@@ -56,6 +62,24 @@ class Opt_Craft_App(wx.Frame):
         for i in range(0, 8):
            self._create_worker_tbox(parent, self.worker_sizer, i)
         self._set_tab_order()
+        return
+
+    def _create_city_buffer_sizer(self, parent):
+        width_tc = 50
+        st = wx.StaticText(parent, -1, "City buffer: ", style = wx.ALIGN_CENTRE_HORIZONTAL)
+        tc1 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_1")
+        tc2 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_2")
+        tc3 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_3")
+        tc4 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_4")
+        tc5 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_5")
+        tc6 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_6")
+        tc7 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_7")
+        tc8 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_8")
+        tc9 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_9")
+        tc10 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_10")
+        tc11 = wx.TextCtrl(parent, -1, "", size=(width_tc, -1), name = "tc_city_11")
+        self.city_buffer_sizer.AddMany([wx.StaticText(parent, -1, "", size=(135,20)), \
+                    st, tc1, tc2, tc3, tc4, tc5, tc6, tc7, tc8, tc9, tc10, tc11])
         return
 
     def _create_item_sizer(self, parent):
@@ -323,7 +347,12 @@ class Opt_Craft_App(wx.Frame):
         il = ItemLoader(item_name)
         
         item = il.get_item()
-        octc = Optimial_craft_time_calculator(item, worker_name_level_list, total_skill_points)
+
+        city_buffer = self._get_city_buffer()
+
+        octc = Optimial_craft_time_calculator(item, worker_name_level_list,
+                                              total_skill_points,
+                                              city_buffer)
 
         list_workers, time_craft, points_left, mastery_rate = octc.run()
 
@@ -360,7 +389,7 @@ class Opt_Craft_App(wx.Frame):
         item = il.get_item()
 
         worker_name_level_list = self._get_worker_name_level_list()
-        
+        city_buffer = self._get_city_buffer()
         list_worker_params = []
         worker_params = Worker_params()
         for i in range(0, 8):
@@ -368,7 +397,9 @@ class Opt_Craft_App(wx.Frame):
             list_worker_params.append(wp)
             worker_params += wp
 
-        onspc = Optimal_next_skill_point_calculator(item, worker_name_level_list, list_worker_params)
+        onspc = Optimal_next_skill_point_calculator(item, worker_name_level_list,
+                                                    list_worker_params,
+                                                    city_buffer)
         next_indice, craft_time, mastery_rate = onspc.run()
         if next_indice is not None:
             tc_to_add = self._get_tc_by_name("tc_%s_%s" % (next_indice[0], next_indice[1]+1)) 
@@ -419,6 +450,33 @@ class Opt_Craft_App(wx.Frame):
             else:
                 result.append((worker_name, 0))
         return result
+
+    def _get_city_buffer(self):
+        city_buffer = City_buffer()
+        ctrl_1_name = "tc_city_1"
+        city_buffer.textile = self._get_skill_value_from_cb(ctrl_1_name)
+        ctrl_2_name = "tc_city_2" 
+        city_buffer.armor = self._get_skill_value_from_cb(ctrl_2_name)
+        ctrl_3_name = "tc_city_3"
+        city_buffer.metal = self._get_skill_value_from_cb(ctrl_3_name)
+        ctrl_4_name = "tc_city_4"
+        city_buffer.weapon = self._get_skill_value_from_cb(ctrl_4_name)
+        ctrl_5_name = "tc_city_5"
+        city_buffer.wood = self._get_skill_value_from_cb(ctrl_5_name)
+        ctrl_6_name = "tc_city_6"
+        city_buffer.alchemy = self._get_skill_value_from_cb(ctrl_6_name)
+        ctrl_7_name = "tc_city_7"
+        city_buffer.magic = self._get_skill_value_from_cb(ctrl_7_name)
+        ctrl_8_name = "tc_city_8"
+        city_buffer.tinker = self._get_skill_value_from_cb(ctrl_8_name)
+        ctrl_9_name = "tc_city_9"
+        city_buffer.jewel = self._get_skill_value_from_cb(ctrl_9_name)
+        ctrl_10_name = "tc_city_10"
+        city_buffer.arts_crafts = self._get_skill_value_from_cb(ctrl_10_name)
+        ctrl_11_name = "tc_city_11"
+        city_buffer.rune = self._get_skill_value_from_cb(ctrl_11_name)
+
+        return city_buffer
 
     def _set_tab_order(self):
         for i in range(0, 8):

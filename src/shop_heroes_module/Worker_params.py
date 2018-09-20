@@ -68,6 +68,19 @@ class Worker_params():
         self.rune = -1
         self.mastery = -1
         return 
+    
+    def apply_cap(self, cap):
+        self.textile = np.min([cap, self.textile])
+        self.armor = np.min([cap, self.armor])
+        self.metal = np.min([cap, self.metal])
+        self.weapon = np.min([cap, self.weapon])
+        self.wood = np.min([cap, self.wood])
+        self.alchemy = np.min([cap, self.alchemy])
+        self.magic = np.min([cap, self.magic])
+        self.tinker = np.min([cap, self.tinker])
+        self.jewel = np.min([cap, self.jewel])
+        self.arts_crafts = np.min([cap, self.arts_crafts])
+        self.rune = np.min([cap, self.rune])
         
     def __add__(self, other):
         result = Worker_params()
