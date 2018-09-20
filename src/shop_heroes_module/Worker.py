@@ -63,7 +63,7 @@ class Worker():
 
     def get_remaining_skill_points(self):
         """Get the available points after skill points are assigned""" 
-        total_points = self.level * self.skill_per_level
+        total_points = (self.level - 1) * self.skill_per_level
         total_used_skill_points = self.get_total_used_skill_points()
         remaining_points = total_points - total_used_skill_points
 
